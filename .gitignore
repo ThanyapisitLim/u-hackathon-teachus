@@ -1,0 +1,82 @@
+# Secrets (never commit)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+service-account*.json
+
+# Dependencies
+node_modules/
+.pnpm-store/
+.yarn/
+bower_components/
+vendor/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Build output
+dist/
+build/
+out/
+.next/
+.nuxt/
+.svelte-kit/
+.turbo/
+.vercel/
+.netlify/
+.output/
+coverage/
+target/
+
+# Mobile / native
+ios/Pods/
+android/.gradle/
+.expo/
+DerivedData/
+*.xcuserstate
+
+# Logs and caches
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.cache/
+.parcel-cache/
+*.tsbuildinfo
+
+# Local databases / uploads
+*.sqlite
+*.sqlite3
+*.db
+uploads/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+
+# Claude Code (personal, machine-specific)
+.claude/settings.local.json
+.claude/worktrees/
+
+# BMAD: _bmad/, _bmad-output/ and .claude/skills/ are committed
+# so teammates share the same agents and planning artifacts.
+# Only the per-user config stays local.
+_bmad/config.user.toml
