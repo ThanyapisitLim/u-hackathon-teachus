@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pawproud",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-16",
+  "assets": {
+    "directory": "./out",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"],
+    "not_found_handling": "404-page"
+  },
+  "ai": { "binding": "AI" },
+  "observability": { "enabled": true }
+}
