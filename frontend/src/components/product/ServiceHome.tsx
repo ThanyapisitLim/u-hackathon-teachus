@@ -68,20 +68,20 @@ export function ServiceHome({
 
   return (
     <div className="pb-4">
-      <header className="flex items-start justify-between gap-4 px-1">
-        <div className="pt-1">
+      <header className="flex items-start justify-between gap-3 px-1">
+        <div className="min-w-0 flex-1 pt-1">
           <p className="flex items-center gap-2 text-xs font-extrabold text-[var(--coral-dark)]">
             <PawPrint size={15} aria-hidden="true" />
             PawProud
           </p>
-          <h1 className="display mt-2 max-w-[290px] text-[38px] font-bold leading-[.98]">
+          <h1 className="display balanced mt-2 text-[32px] font-bold leading-[1.02] min-[375px]:text-[38px]">
             {th ? "การดูแลของโมจิ" : "Mochi’s care"}
           </h1>
         </div>
         <button
           type="button"
           onClick={onOpenProfile}
-          className="pressable relative mt-1 grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-full border-[3px] border-white bg-[var(--soft)] shadow-[0_8px_24px_rgba(85,43,32,.16)]"
+          className="pressable relative mt-1 grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full border-[3px] border-white bg-[var(--soft)] shadow-[0_8px_24px_rgba(85,43,32,.16)] min-[375px]:h-14 min-[375px]:w-14"
           aria-label={th ? "เปิดโปรไฟล์โมจิ" : "Open Mochi’s profile"}
         >
           <Image
@@ -94,26 +94,24 @@ export function ServiceHome({
         </button>
       </header>
 
-      <section className="relative -mx-4 mt-5 min-h-[435px] overflow-hidden px-5 pt-8">
+      <section className="relative -mx-4 mt-5 min-h-[420px] overflow-hidden px-5 pt-8">
         <motion.div
           aria-hidden="true"
-          className="absolute -left-[18%] top-4 h-[345px] w-[116%] bg-[linear-gradient(145deg,#653426,#452117)] shadow-[0_26px_55px_rgba(85,43,32,.2)]"
-          style={{ borderRadius: "43% 57% 46% 54% / 38% 38% 62% 62%" }}
-          animate={reduceMotion ? undefined : { rotate: [-1.4, 0.6, -1.4], scale: [1, 1.015, 1] }}
+          className="absolute -left-12 top-3 h-[374px] w-[374px] rounded-full bg-[linear-gradient(145deg,#653426,#452117)] shadow-[0_26px_55px_rgba(85,43,32,.2)] min-[400px]:-left-9 min-[400px]:h-[392px] min-[400px]:w-[392px]"
+          animate={reduceMotion ? undefined : { scale: [1, 1.018, 1] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
         />
         <div
           aria-hidden="true"
-          className="absolute -right-20 top-0 h-48 w-48 bg-[var(--coral)]/75"
-          style={{ borderRadius: "58% 42% 63% 37% / 45% 64% 36% 55%" }}
+          className="absolute -right-16 top-5 h-48 w-48 rounded-full bg-[var(--coral)]/78"
         />
         <motion.div
           aria-hidden="true"
-          className="absolute -bottom-1 -right-5 h-[224px] w-[245px] overflow-hidden"
+          className="absolute bottom-2 -right-4 h-[218px] w-[238px] overflow-hidden"
           animate={reduceMotion ? undefined : { y: [0, -8, 0], rotate: [-1.5, 1.2, -1.5] }}
           transition={{ duration: 4.4, repeat: Infinity, ease: "easeInOut" }}
         >
-          <div className="relative h-[245px] w-[245px]">
+          <div className="relative h-[250px] w-[250px] origin-top-right scale-[1.23]">
             <Image
               src="/brand/pawproud-mascot-logo.webp"
               alt=""
@@ -134,8 +132,8 @@ export function ServiceHome({
           </h2>
           <p className="mt-4 max-w-[215px] text-sm leading-6 text-white/72">
             {th
-              ? "เปรียบเทียบ 2 รส บันทึก 3 ปฏิกิริยา"
-              : "Compare 2 tastes. Record 3 reactions."}
+              ? "เทียบ 2 ตัวเลือกปิดผนึก บันทึก 3 ปฏิกิริยา"
+              : "Compare 2 sealed options. Record 3 reactions."}
           </p>
         </div>
 
@@ -201,12 +199,11 @@ export function ServiceHome({
             type="button"
             onClick={onOpenAi}
             whileTap={{ scale: 0.985 }}
-            className="relative flex min-h-[112px] w-full items-center gap-4 overflow-hidden py-4 pl-2 pr-1 text-left"
+          className="relative flex min-h-[112px] w-full items-center gap-4 overflow-hidden py-4 pl-2 pr-1 text-left"
           >
             <span
               aria-hidden="true"
-              className="absolute inset-y-1 left-0 right-0 -z-10 bg-[linear-gradient(90deg,#e7f6ff_0%,rgba(231,246,255,.8)_62%,transparent_100%)]"
-              style={{ clipPath: "polygon(0 8%, 96% 0, 100% 86%, 5% 100%)" }}
+            className="absolute inset-y-2 left-0 right-0 -z-10 rounded-full bg-[linear-gradient(90deg,#e7f6ff_0%,rgba(231,246,255,.74)_68%,transparent_100%)]"
             />
             <motion.span
               className="relative grid h-[72px] w-[72px] shrink-0 place-items-center rounded-full bg-white text-[var(--trust)] shadow-[0_12px_30px_rgba(37,99,168,.16)]"
@@ -233,8 +230,7 @@ export function ServiceHome({
             className="relative flex min-h-[112px] w-full items-center gap-4 py-4 pl-2 pr-1 text-left"
           >
             <span
-              className="grid h-[72px] w-[72px] shrink-0 place-items-center bg-[var(--mint)] text-[var(--success)] shadow-[0_12px_28px_rgba(45,122,99,.12)]"
-              style={{ borderRadius: "43% 57% 55% 45% / 56% 42% 58% 44%" }}
+              className="grid h-[72px] w-[72px] shrink-0 place-items-center rounded-full bg-[var(--mint)] text-[var(--success)] shadow-[0_12px_28px_rgba(45,122,99,.12)]"
             >
               <ShieldCheck size={31} strokeWidth={2.1} aria-hidden="true" />
             </span>
@@ -256,8 +252,7 @@ export function ServiceHome({
             className="relative flex min-h-[112px] w-full items-center gap-4 py-4 pl-2 pr-1 text-left"
           >
             <span
-              className="grid h-[72px] w-[72px] shrink-0 place-items-center bg-[#ffe4e7] text-[var(--danger)]"
-              style={{ borderRadius: "58% 42% 40% 60% / 42% 55% 45% 58%" }}
+              className="grid h-[72px] w-[72px] shrink-0 place-items-center rounded-full bg-[#ffe4e7] text-[var(--danger)]"
             >
               <HeartPulse size={31} strokeWidth={2.1} aria-hidden="true" />
             </span>

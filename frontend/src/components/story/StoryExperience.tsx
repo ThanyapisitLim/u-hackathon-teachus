@@ -177,7 +177,7 @@ const Chain = ({ locale }: { locale: Locale }) => {
   ];
   const steps = locale === "en" ? en : th;
   return (
-    <div className="relative mt-10 grid gap-3 md:grid-cols-6">
+    <div className="relative mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
       {steps.map((s, i) => (
         <motion.div
           key={s}
@@ -195,7 +195,7 @@ const Chain = ({ locale }: { locale: Locale }) => {
           <p className="mt-5 text-sm font-black leading-5">{s}</p>
           {i < 5 && (
             <ArrowRight
-              className="absolute -bottom-5 left-1/2 z-10 -translate-x-1/2 rotate-90 rounded-full bg-[var(--canvas)] p-1 text-[var(--muted)] md:-right-5 md:bottom-auto md:left-auto md:top-1/2 md:translate-x-0 md:-translate-y-1/2 md:rotate-0"
+              className="absolute -bottom-5 left-1/2 z-10 hidden -translate-x-1/2 rotate-90 rounded-full bg-[var(--canvas)] p-1 text-[var(--muted)] lg:-right-5 lg:bottom-auto lg:left-auto lg:top-1/2 lg:block lg:translate-x-0 lg:-translate-y-1/2 lg:rotate-0"
               size={28}
             />
           )}
@@ -245,16 +245,16 @@ function Funnel({ locale }: { locale: Locale }) {
       ? [
           ["FREE", "Taste Trial"],
           ["LEARN", "TastePrint"],
-          ["PAID ONCE", "First Bowl"],
+          ["PAID ONCE", "First Match"],
           ["PROOF", "Meal Check-in"],
-          ["OPTIONAL", "Subscription"],
+          ["OPTIONAL", "Adaptive Refill"],
         ]
       : [
           ["ฟรี", "Taste Trial"],
           ["เรียนรู้", "TastePrint"],
-          ["จ่ายครั้งเดียว", "First Bowl"],
+          ["จ่ายครั้งเดียว", "First Match"],
           ["พิสูจน์", "เช็กมื้ออาหาร"],
-          ["ทางเลือก", "Subscription"],
+          ["ทางเลือก", "เติมแบบปรับได้"],
         ];
   return (
     <div className="mt-9 flex flex-col items-stretch gap-2 md:flex-row md:items-center">
@@ -286,39 +286,104 @@ function Funnel({ locale }: { locale: Locale }) {
   );
 }
 
-const EvidenceCard = ({
-  number,
-  label,
-  note,
-  href,
-  locale,
-}: {
-  number: string;
-  label: string;
-  note: string;
-  href: string;
-  locale: Locale;
-}) => (
-  <a
-    href={href}
-    target="_blank"
-    rel="noreferrer"
-    className="pressable group rounded-[28px] border border-[var(--line)] bg-white p-5 hover:-translate-y-1 hover:shadow-soft"
-  >
-    <p className="display text-[34px] font-black text-[var(--coral-dark)]">
-      {number}
-    </p>
-    <p className="mt-2 font-black leading-5">{label}</p>
-    <p className="mt-3 text-xs leading-5 text-[var(--muted)]">{note}</p>
-    <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-black text-[var(--trust)]">
-      {locale === "en" ? "SOURCE" : "แหล่งข้อมูล"}{" "}
-      <ArrowRight
-        size={12}
-        className="transition-transform group-hover:translate-x-1"
-      />
-    </span>
-  </a>
-);
+function MarketLadder({ locale }: { locale: Locale }) {
+  const steps =
+    locale === "en"
+      ? [
+          {
+            value: "฿33.61B",
+            title: "Thailand dog-food GMV",
+            note: "2025 transaction pool—not our revenue",
+            tone: "bg-[var(--chocolate)] text-white",
+          },
+          {
+            value: "฿4.64B",
+            title: "National online proxy",
+            note: "13.8% pet-food e-commerce share",
+            tone: "bg-[var(--coral-dark)] text-white",
+          },
+          {
+            value: "฿656M",
+            title: "Bangkok serviceable ceiling",
+            note: "Channel + geography calculation",
+            tone: "bg-[var(--honey)] text-[var(--chocolate)]",
+          },
+          {
+            value: "฿98–197M",
+            title: "Need-state GMV scenario",
+            note: "15–30% eligibility assumption",
+            tone: "bg-[var(--mint)] text-[var(--success)]",
+          },
+          {
+            value: "฿14.8–29.5M",
+            title: "Platform revenue pool",
+            note: "15% illustrative take rate",
+            tone: "bg-[var(--sky)] text-[var(--trust)]",
+          },
+        ]
+      : [
+          {
+            value: "฿33.61B",
+            title: "GMV อาหารสุนัขไทย",
+            note: "เงินในหมวดปี 2025 ไม่ใช่รายได้เรา",
+            tone: "bg-[var(--chocolate)] text-white",
+          },
+          {
+            value: "฿4.64B",
+            title: "Online proxy ประเทศไทย",
+            note: "ใช้ e-commerce share 13.8% ของ pet food",
+            tone: "bg-[var(--coral-dark)] text-white",
+          },
+          {
+            value: "฿656M",
+            title: "เพดานบริการ Greater Bangkok",
+            note: "คำนวณจากช่องทางและพื้นที่",
+            tone: "bg-[var(--honey)] text-[var(--chocolate)]",
+          },
+          {
+            value: "฿98–197M",
+            title: "Need-state GMV scenario",
+            note: "สมมติฐานผู้เกี่ยวข้อง 15–30%",
+            tone: "bg-[var(--mint)] text-[var(--success)]",
+          },
+          {
+            value: "฿14.8–29.5M",
+            title: "Revenue-pool scenario",
+            note: "สมมติ take rate 15%",
+            tone: "bg-[var(--sky)] text-[var(--trust)]",
+          },
+        ];
+
+  return (
+    <div className="relative mt-12">
+      <div className="absolute left-[8%] right-[8%] top-[70px] hidden h-px bg-[var(--line)] lg:block" />
+      <div className="relative grid gap-7 sm:grid-cols-2 lg:grid-cols-5 lg:gap-4">
+        {steps.map((step, i) => (
+          <motion.div
+            key={step.value}
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.08 }}
+            className="grid grid-cols-[108px_1fr] items-center gap-4 sm:block sm:text-center"
+          >
+            <div
+              className={`display relative z-10 grid aspect-square w-[108px] place-items-center rounded-full px-3 text-center text-[21px] font-black leading-tight shadow-[0_14px_34px_rgba(86,44,28,.13)] sm:mx-auto sm:w-[132px] lg:w-[140px] ${step.tone}`}
+            >
+              {step.value}
+            </div>
+            <div className="min-w-0 sm:mt-5">
+              <p className="font-black leading-5">{step.title}</p>
+              <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
+                {step.note}
+              </p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function ServiceArchitecture({ locale }: { locale: Locale }) {
   const steps =
@@ -444,7 +509,7 @@ function ServiceArchitecture({ locale }: { locale: Locale }) {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-7 lg:grid-cols-6 lg:gap-3">
+        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {steps.map(({ title, detail, status, live, Icon }, i) => (
             <div className="contents" key={title}>
               <motion.div
@@ -452,14 +517,14 @@ function ServiceArchitecture({ locale }: { locale: Locale }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.07 }}
-                className={`relative min-h-[220px] rounded-[28px] p-5 ${
+                className={`relative flex min-h-0 items-start gap-4 rounded-[24px] p-4 sm:block sm:min-h-[180px] sm:p-5 xl:min-h-[220px] ${
                   live
                     ? "bg-[var(--chocolate)] text-white shadow-[0_18px_36px_rgba(68,35,25,.16)]"
                     : "border-2 border-dashed border-[var(--coral)]/55 bg-white/65 text-[var(--ink)]"
                 }`}
               >
                 <div
-                  className={`grid h-11 w-11 place-items-center rounded-2xl ${
+                  className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${
                     live
                       ? "bg-white/12 text-[var(--honey)]"
                       : "bg-[var(--soft)] text-[var(--coral-dark)]"
@@ -467,8 +532,9 @@ function ServiceArchitecture({ locale }: { locale: Locale }) {
                 >
                   <Icon size={22} />
                 </div>
+                <div className="min-w-0 sm:contents">
                 <p
-                  className={`mt-5 text-[9px] font-black tracking-[.15em] ${
+                  className={`text-[9px] font-black tracking-[.15em] sm:mt-5 ${
                     live ? "text-[#8ee0bf]" : "text-[var(--coral-dark)]"
                   }`}
                 >
@@ -478,9 +544,10 @@ function ServiceArchitecture({ locale }: { locale: Locale }) {
                 <p className={`mt-2 text-xs leading-5 ${live ? "text-white/58" : "text-[var(--muted)]"}`}>
                   {detail}
                 </p>
+                </div>
                 {i < steps.length - 1 && (
-                  <span className="absolute -bottom-5 left-1/2 z-10 grid h-8 w-8 -translate-x-1/2 place-items-center rounded-full bg-[var(--coral-dark)] text-white shadow-md lg:-right-[22px] lg:bottom-auto lg:left-auto lg:top-1/2 lg:translate-x-0 lg:-translate-y-1/2">
-                    <ArrowRight className="rotate-90 lg:rotate-0" size={15} />
+                  <span className="absolute -right-[22px] top-1/2 z-10 hidden h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-[var(--coral-dark)] text-white shadow-md xl:grid">
+                    <ArrowRight size={15} />
                   </span>
                 )}
               </motion.div>
@@ -548,7 +615,7 @@ export function StoryExperience() {
             <StoryTag>
               {locale === "en" ? "Try before you subscribe" : "ลองก่อนสมัคร"}
             </StoryTag>
-            <h1 className="display balanced mt-6 max-w-[790px] text-[52px] leading-[.96] font-black sm:text-[68px] lg:text-[82px]">
+            <h1 className="display balanced mt-6 max-w-[790px] text-[46px] leading-[.96] font-black min-[375px]:text-[52px] sm:text-[68px] lg:text-[82px]">
               {locale === "en" ? (
                 <>
                   The payer chooses.
@@ -573,8 +640,8 @@ export function StoryExperience() {
             </h1>
             <p className="mt-6 max-w-[620px] text-lg leading-8 text-[var(--muted)]">
               {locale === "en"
-                ? "A full bag is already home. Mochi’s bowl is still untouched. PawProud lets the dog answer before the commitment."
-                : "ถุงใหญ่อยู่ที่บ้านแล้ว แต่ชามของโมจิยังไม่ถูกแตะ PawProud ให้น้องได้ตอบก่อนตัดสินใจผูกมัด"}
+                ? "A full bag is already home. Mochi’s bowl is still untouched. PawProud lets the dog answer, then finds a match across trusted existing brands."
+                : "ถุงใหญ่อยู่ที่บ้านแล้ว แต่ชามของโมจิยังไม่ถูกแตะ PawProud ให้น้องได้ตอบ แล้วคัดตัวเลือกที่เข้ากันจากหลายแบรนด์ที่เชื่อถือได้"}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
@@ -741,8 +808,8 @@ export function StoryExperience() {
             {locale === "en" ? "Prototype truth:" : "ความจริงของต้นแบบ:"}
           </strong>{" "}
           {locale === "en"
-            ? "Mochi’s response and TastePrint logic are simulated. A commercial service would require validated physical samples, nutrition review, QA and traceability."
-            : "ปฏิกิริยาของโมจิและตรรกะ TastePrint เป็นการจำลอง บริการจริงต้องมีตัวอย่างอาหารที่ผ่านการตรวจ โภชนาการ QA และการติดตามย้อนกลับ"}
+            ? "Mochi’s response and TastePrint logic are simulated. A commercial service would compare eligible manufacturer-sealed products fulfilled by licensed partners—with nutrition review, QA and traceability."
+            : "ปฏิกิริยาของโมจิและตรรกะ TastePrint เป็นการจำลอง บริการจริงจะเปรียบเทียบสินค้าที่ผ่านเกณฑ์ในแพ็กปิดผนึกของผู้ผลิต และจัดส่งโดยพาร์ตเนอร์ที่มีใบอนุญาต พร้อม nutrition review, QA และ traceability"}
         </div>
       </section>
 
@@ -839,14 +906,14 @@ export function StoryExperience() {
               {locale === "en" ? (
                 <>
                   The first paid moment is{" "}
-                  <span className="text-[var(--coral-dark)]">one bowl.</span>
+                  <span className="text-[var(--coral-dark)]">one match.</span>
                   <br />
                   Not a commitment.
                 </>
               ) : (
                 <>
                   รายได้แรกคือ
-                  <span className="text-[var(--coral-dark)]">หนึ่งชาม</span>
+                  <span className="text-[var(--coral-dark)]">หนึ่ง Match</span>
                   <br />
                   ไม่ใช่การผูกมัด
                 </>
@@ -854,16 +921,16 @@ export function StoryExperience() {
             </h2>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--muted)]">
               {locale === "en"
-                ? "PawProud makes subscription a reward for proven acceptance—not the price of discovering whether the food works."
-                : "PawProud ทำให้ Subscription เป็นผลจากการยอมรับที่พิสูจน์แล้ว ไม่ใช่ราคาที่ต้องจ่ายเพื่อค้นหาว่าอาหารใช้ได้หรือไม่"}
+                ? "PawProud routes a one-time matched order across existing brands. A disclosed commerce margin and optional service fee fund the learning layer; repeat delivery is earned only after acceptance."
+                : "PawProud ส่งคำสั่งซื้อแบบ Match ครั้งเดียวไปยังสินค้าหลายแบรนด์ รายได้มาจาก margin ที่เปิดเผยและ service fee ทางเลือก ส่วนการเติมซ้ำต้องเกิดหลังยืนยันการยอมรับเท่านั้น"}
             </p>
           </div>
           <Funnel locale={locale} />
           <div className="mt-8 rounded-[28px] bg-white p-6 text-center shadow-soft">
             <p className="display text-3xl font-black text-[var(--coral-dark)]">
               {locale === "en"
-                ? "No subscription before acceptance."
-                : "ไม่มี Subscription ก่อนยืนยันการยอมรับ"}
+                ? "No refill before acceptance. No paid ranking."
+                : "ไม่เติมซ้ำก่อนยืนยัน และไม่ขายอันดับคำแนะนำ"}
             </p>
           </div>
         </div>
@@ -879,7 +946,7 @@ export function StoryExperience() {
             <h2 className="display balanced mt-5 text-5xl leading-[1.02] font-black md:text-7xl">
               {locale === "en" ? (
                 <>
-                  One meal is the wedge.
+                  One match is the wedge.
                   <br />
                   <span className="text-[var(--coral-dark)]">
                     Continuity is the platform.
@@ -887,7 +954,7 @@ export function StoryExperience() {
                 </>
               ) : (
                 <>
-                  หนึ่งมื้อคือจุดเริ่ม
+                  หนึ่ง Match คือจุดเริ่ม
                   <br />
                   <span className="text-[var(--coral-dark)]">
                     ความต่อเนื่องคือแพลตฟอร์ม
@@ -944,13 +1011,13 @@ export function StoryExperience() {
                 ? [
                     ["Taste Trial", "Owner report"],
                     ["TastePrint", "Early signal"],
-                    ["First Bowl", "One-time order"],
+                      ["First Match", "One-time order"],
                     ["Meal check-in", "Accepted"],
                   ]
                 : [
                     ["Taste Trial", "เจ้าของบันทึก"],
                     ["TastePrint", "สัญญาณเบื้องต้น"],
-                    ["First Bowl", "สั่งครั้งเดียว"],
+                      ["First Match", "สั่งครั้งเดียว"],
                     ["เช็กมื้ออาหาร", "ยอมรับอาหารแล้ว"],
                   ]
               ).map(([a, b], i) => (
@@ -994,82 +1061,95 @@ export function StoryExperience() {
 
       <section className="bg-white px-4 py-24 md:px-8 md:py-32">
         <div className="mx-auto max-w-[1240px]">
-          <div className="grid gap-8 lg:grid-cols-[.7fr_1.3fr] lg:items-end">
+          <div className="grid gap-8 lg:grid-cols-[.82fr_1.18fr] lg:items-end">
             <div>
               <StoryTag>
-                06 · {locale === "en" ? "Category context" : "บริบทตลาด"}
+                06 · {locale === "en" ? "Market position" : "ตำแหน่งในตลาด"}
               </StoryTag>
-              <h2 className="display mt-5 text-5xl leading-[1.02] font-black md:text-6xl">
+              <h2 className="display balanced mt-5 text-5xl leading-[1.02] font-black md:text-6xl">
                 {locale === "en"
-                  ? "Big enough to matter. Small enough to prove honestly."
-                  : "ใหญ่พอที่จะสำคัญ เล็กพอที่จะพิสูจน์อย่างซื่อสัตย์"}
+                  ? "A red ocean below. A decision layer above."
+                  : "ด้านล่างคือ Red Ocean ด้านบนคือชั้นตัดสินใจ"}
               </h2>
             </div>
             <p className="text-lg leading-8 text-[var(--muted)]">
               {locale === "en"
-                ? "These figures show category relevance—not PawProud demand. The first real market proof must come from owner–dog behavior in a pilot."
-                : "ตัวเลขเหล่านี้แสดงความสำคัญของหมวดหมู่ ไม่ใช่ Demand ของ PawProud หลักฐานตลาดจริงต้องมาจากพฤติกรรมเจ้าของและสุนัขใน Pilot"}
+                ? "PawProud does not need to win by making another bag. It begins with a focused food-fit niche, routes demand to existing registered brands, and earns a disclosed share only when a matched product is fulfilled."
+                : "PawProud ไม่ต้องชนะด้วยการทำอาหารอีกถุง เราเริ่มจาก niche เรื่อง food fit ส่ง demand ไปยังสินค้าที่ขึ้นทะเบียนหลายแบรนด์ และรับส่วนแบ่งที่เปิดเผยเมื่อเกิดการจัดส่งจริง"}
             </p>
           </div>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <EvidenceCard
-              number="60.1%"
-              label={
-                locale === "en" ? "Selected palatability" : "เลือกความน่ากิน"
-              }
-              note={
-                locale === "en"
-                  ? "Thai dog-owner survey, n=411; multi-select, not national prevalence."
-                  : "แบบสำรวจเจ้าของสุนัขไทย n=411; เลือกได้หลายข้อ ไม่ใช่ค่าความชุกระดับประเทศ"
-              }
-              href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12668747/"
-              locale={locale}
-            />
-            <EvidenceCard
-              number="6.656m"
-              label={
-                locale === "en"
-                  ? "Dog-owning households"
-                  : "ครัวเรือนที่เลี้ยงสุนัข"
-              }
-              note={
-                locale === "en"
-                  ? "Thailand 2025 estimate; category context, not customers."
-                  : "ประมาณการประเทศไทยปี 2025; ใช้อธิบายบริบทหมวดหมู่ ไม่ใช่จำนวนลูกค้า"
-              }
-              href="https://agriculture.canada.ca/en/international-trade/reports-and-guides/sector-trend-analysis-pet-food-thailand"
-              locale={locale}
-            />
-            <EvidenceCard
-              number="US$988.4m"
-              label={
-                locale === "en"
-                  ? "Dog-food retail sales"
-                  : "ยอดขายปลีกอาหารสุนัข"
-              }
-              note={
-                locale === "en"
-                  ? "Thailand 2025 estimate; category ceiling, not PawProud TAM."
-                  : "ประมาณการประเทศไทยปี 2025; ขนาดหมวดหมู่ ไม่ใช่ TAM ของ PawProud"
-              }
-              href="https://agriculture.canada.ca/en/international-trade/reports-and-guides/sector-trend-analysis-pet-food-thailand"
-              locale={locale}
-            />
-            <EvidenceCard
-              number="≈805k"
-              label={
-                locale === "en"
-                  ? "Bangkok dog households"
-                  : "ครัวเรือนสุนัขในกรุงเทพฯ"
-              }
-              note={
-                locale === "en"
-                  ? "Calculated geographic base; not SAM, demand or revenue."
-                  : "ฐานพื้นที่จากการคำนวณ ไม่ใช่ SAM อุปสงค์ หรือรายได้"
-              }
-              href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12070910/"
-              locale={locale}
-            />
+          <div className="mt-12 grid gap-10 border-y border-[var(--line)] py-10 lg:grid-cols-[.72fr_1.28fr] lg:items-center">
+            <div className="flex items-center gap-5 sm:gap-7">
+              <motion.div
+                initial={{ scale: 0.82, opacity: 0 }}
+                whileInView={{ scale: 1, opacity: 1 }}
+                viewport={{ once: true }}
+                className="display grid aspect-square w-[132px] shrink-0 place-items-center rounded-full bg-[var(--coral-dark)] text-center text-5xl font-black text-white shadow-[0_18px_42px_rgba(216,58,79,.24)] sm:w-[176px] sm:text-6xl"
+              >
+                288
+              </motion.div>
+              <div className="min-w-0">
+                <p className="text-xl font-black leading-6">
+                  {locale === "en"
+                    ? "dog products launched"
+                    : "ผลิตภัณฑ์สุนัขเปิดตัว"}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                  {locale === "en"
+                    ? "Jan 2021–6 Mar 2026 in the reported launch database. Supply is crowded; choosing is the gap."
+                    : "ม.ค. 2021–6 มี.ค. 2026 ในฐานข้อมูลที่รายงาน สินค้ามีมากแล้ว ช่องว่างคือการช่วยเลือก"}
+                </p>
+              </div>
+            </div>
+            <div>
+              <p className="display text-3xl font-black leading-tight md:text-4xl">
+                {locale === "en"
+                  ? "Brands make food. PawProud learns fit and routes demand."
+                  : "แบรนด์ผลิตอาหาร PawProud เรียนรู้ความเข้ากันและส่งต่อ Demand"}
+              </p>
+              <div className="mt-7 grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2 text-center">
+                {[
+                  locale === "en" ? "TRUSTED BRANDS" : "แบรนด์ที่ตรวจสอบ",
+                  locale === "en" ? "PAWPROUD" : "PAWPROUD",
+                  locale === "en" ? "MATCHED REFILL" : "เติมสิ่งที่ Match",
+                ].map((label, i) => (
+                  <div className="contents" key={label}>
+                    <div
+                      className={`grid aspect-square min-w-0 place-items-center rounded-full px-2 text-[9px] font-black leading-4 tracking-[.08em] sm:text-[11px] ${i === 1 ? "bg-[var(--chocolate)] text-white" : "border-2 border-[var(--line)] bg-[var(--canvas)] text-[var(--ink)]"}`}
+                    >
+                      {label}
+                    </div>
+                    {i < 2 && (
+                      <ArrowRight className="text-[var(--coral-dark)]" size={18} />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <MarketLadder locale={locale} />
+          <div className="mt-10 grid gap-5 border-t border-[var(--line)] pt-7 text-xs leading-5 text-[var(--muted)] md:grid-cols-[1fr_auto] md:items-start">
+            <p>
+              {locale === "en"
+                ? "Market ladder: 2025 category GMV × 13.8% pet-food e-commerce proxy × 14.15% Greater Bangkok owned-dog proxy. The 15–30% need-state and 15% take rate are labelled planning assumptions—not demand or forecasts."
+                : "Market ladder: GMV ปี 2025 × e-commerce proxy ของ pet food 13.8% × owned-dog proxy ของ Greater Bangkok 14.15% ส่วน need-state 15–30% และ take rate 15% เป็นสมมติฐานวางแผน ไม่ใช่ demand หรือ forecast"}
+            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 font-black text-[var(--trust)]">
+              <a
+                href="https://agriculture.canada.ca/en/international-trade/reports-and-guides/sector-trend-analysis-pet-food-thailand"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {locale === "en" ? "CATEGORY SOURCE ↗" : "แหล่งตลาด ↗"}
+              </a>
+              <a
+                href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12070910/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {locale === "en" ? "BANGKOK SOURCE ↗" : "แหล่งกรุงเทพฯ ↗"}
+              </a>
+            </div>
           </div>
         </div>
       </section>
@@ -1159,13 +1239,13 @@ export function StoryExperience() {
             </StoryTag>
             <h2 className="display balanced mt-5 text-5xl leading-[1.02] font-black md:text-7xl">
               {locale === "en"
-                ? "One bowl earns trust. Trust earns the right to serve the next one."
-                : "หนึ่งชามสร้างความไว้ใจ และความไว้ใจสร้างสิทธิ์ให้เราเสิร์ฟชามถัดไป"}
+                ? "One matched order earns trust. Every confirmed refill makes the next decision better."
+                : "หนึ่งคำสั่งซื้อที่ Match สร้างความไว้ใจ ทุกการเติมที่ยืนยันแล้วทำให้การตัดสินใจครั้งถัดไปดีขึ้น"}
             </h2>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-white/72">
               {locale === "en"
-                ? "Next: a 30–50 owner–dog feasibility pilot measuring completion, acceptance, safety load, First Bowl conversion, leftover change, and voluntary repeat use."
-                : "ขั้นต่อไปคือ Pilot เจ้าของ–สุนัข 30–50 คู่ วัดการทำจบ การยอมรับ ภาระด้านความปลอดภัย Conversion ของ First Bowl ปริมาณอาหารเหลือ และการกลับมาใช้โดยสมัครใจ"}
+                ? "Next: a 30–50 owner–dog feasibility pilot measuring completion, acceptance, safety load, First Match conversion, leftover change, and voluntary refill."
+                : "ขั้นต่อไปคือ Pilot เจ้าของ–สุนัข 30–50 คู่ วัดการทำจบ การยอมรับ ภาระด้านความปลอดภัย Conversion ของ First Match ปริมาณอาหารเหลือ และการเติมซ้ำโดยสมัครใจ"}
             </p>
           </div>
           <div className="rounded-[32px] bg-white p-6 text-[var(--ink)] shadow-soft">
@@ -1214,13 +1294,6 @@ export function StoryExperience() {
         </div>
       </footer>
 
-      <Link
-        href="/app/food/"
-        className="pressable fixed bottom-4 right-4 z-40 flex h-14 items-center gap-2 rounded-full bg-[var(--coral-dark)] px-5 text-sm font-black text-white shadow-[0_14px_35px_rgba(90,34,30,.3)] md:hidden"
-      >
-        {locale === "en" ? "Try with Mochi" : "ลองกับโมจิ"}
-        <ArrowRight size={17} />
-      </Link>
     </div>
   );
 }

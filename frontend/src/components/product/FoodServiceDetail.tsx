@@ -66,10 +66,10 @@ export function FoodServiceDetail({
   const stages = [
     {
       icon: UtensilsCrossed,
-      en: "Compare 2 tastes",
-      th: "เปรียบเทียบ 2 รส",
-      detailEn: "Place small portions side by side.",
-      detailTh: "วางปริมาณเล็ก ๆ ไว้ข้างกัน",
+      en: "Compare 2 sealed options",
+      th: "เทียบ 2 ตัวเลือกปิดผนึก",
+      detailEn: "Use eligible manufacturer packs from trusted partners.",
+      detailTh: "ใช้แพ็กผู้ผลิตที่ผ่านเกณฑ์จากพาร์ตเนอร์ที่เชื่อถือได้",
       tone: "bg-[#fff0d2] text-[var(--warning)]",
     },
     {
@@ -111,15 +111,13 @@ export function FoodServiceDetail({
       <section className="relative -mx-4 -mt-1 min-h-[430px] overflow-hidden px-5 pt-6">
         <motion.div
           aria-hidden="true"
-          className="absolute -right-[22%] top-6 h-[355px] w-[112%] bg-[linear-gradient(145deg,#fff0dd,#ffdce3)]"
-          style={{ borderRadius: "57% 43% 52% 48% / 42% 55% 45% 58%" }}
-          animate={reduceMotion ? undefined : { rotate: [1.3, -0.8, 1.3], scale: [1, 1.018, 1] }}
+          className="absolute -right-16 top-5 h-[360px] w-[360px] rounded-full bg-[linear-gradient(145deg,#fff0dd,#ffdce3)]"
+          animate={reduceMotion ? undefined : { scale: [1, 1.018, 1] }}
           transition={{ duration: 7.5, repeat: Infinity, ease: "easeInOut" }}
         />
         <div
           aria-hidden="true"
-          className="absolute -left-16 top-36 h-44 w-44 bg-[var(--honey)]/24"
-          style={{ borderRadius: "63% 37% 45% 55% / 42% 60% 40% 58%" }}
+          className="absolute -left-16 top-36 h-44 w-44 rounded-full bg-[var(--honey)]/24"
         />
         <svg
           aria-hidden="true"
@@ -148,8 +146,8 @@ export function FoodServiceDetail({
           </h1>
           <p className="mt-4 max-w-[300px] text-sm leading-6 text-[var(--muted)]">
             {th
-              ? "เปรียบเทียบ 2 รส บันทึก 3 ปฏิกิริยา"
-              : "Compare 2 tastes. Record 3 reactions."}
+              ? "เทียบ 2 ตัวเลือกปิดผนึก บันทึก 3 ปฏิกิริยา"
+              : "Compare 2 sealed options. Record 3 reactions."}
           </p>
         </div>
 
@@ -159,7 +157,7 @@ export function FoodServiceDetail({
           animate={reduceMotion ? undefined : { y: [0, -7, 0], rotate: [-1, 1.2, -1] }}
           transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <div className="relative h-[235px] w-[235px]">
+          <div className="relative h-[248px] w-[248px] origin-top-right scale-[1.2]">
             <Image
               src="/brand/pawproud-mascot-logo.webp"
               alt=""
@@ -180,8 +178,7 @@ export function FoodServiceDetail({
         </motion.span>
         <motion.span
           aria-hidden="true"
-          className="absolute bottom-5 left-24 z-20 grid h-14 w-14 place-items-center bg-white text-[var(--trust)] shadow-[0_13px_28px_rgba(85,43,32,.14)]"
-          style={{ borderRadius: "56% 44% 48% 52% / 40% 58% 42% 60%" }}
+          className="absolute bottom-5 left-24 z-20 grid h-14 w-14 place-items-center rounded-full bg-white text-[var(--trust)] shadow-[0_13px_28px_rgba(85,43,32,.14)]"
           animate={reduceMotion ? undefined : { y: [0, -5, 0], rotate: [4, -4, 4] }}
           transition={{ duration: 2.9, repeat: Infinity, delay: 0.45, ease: "easeInOut" }}
         >
@@ -273,8 +270,7 @@ export function FoodServiceDetail({
                 transition={{ delay: index * 0.08, duration: 0.4 }}
               >
                 <span
-                  className={`relative z-10 grid h-[66px] w-[66px] shrink-0 place-items-center shadow-[0_9px_24px_rgba(85,43,32,.1)] ${stage.tone}`}
-                  style={{ borderRadius: `${44 + index * 3}% ${56 - index * 3}% 54% 46% / 48% 43% 57% 52%` }}
+                  className={`relative z-10 grid h-[66px] w-[66px] shrink-0 place-items-center rounded-full shadow-[0_9px_24px_rgba(85,43,32,.1)] ${stage.tone}`}
                 >
                   <Icon size={27} strokeWidth={2.2} aria-hidden="true" />
                 </span>
@@ -300,8 +296,7 @@ export function FoodServiceDetail({
       >
         <span
           aria-hidden="true"
-          className="absolute inset-0 -z-10 bg-[linear-gradient(110deg,#dff2ff_0%,#f2eaff_78%,#fff8f0_100%)]"
-          style={{ clipPath: "polygon(0 9%, 100% 0, 96% 90%, 4% 100%)" }}
+          className="absolute inset-1 -z-10 rounded-[34px] bg-[linear-gradient(110deg,#dff2ff_0%,#f2eaff_78%,#fff8f0_100%)]"
         />
         <motion.span
           aria-hidden="true"

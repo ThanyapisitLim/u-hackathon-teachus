@@ -4,32 +4,60 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
 
-function Ingredient({
+function SealedPack({
+  x,
   color,
   phase,
-  radius = 1.55,
+  label,
 }: {
+  x: number;
   color: string;
   phase: number;
-  radius?: number;
+  label: string;
 }) {
-  const ref = useRef<THREE.Mesh>(null);
+  const pack = useRef<THREE.Group>(null);
+
   useFrame(({ clock }) => {
-    if (!ref.current) return;
-    const t = clock.getElapsedTime() * 0.35 + phase;
-    ref.current.position.x = Math.cos(t) * radius;
-    ref.current.position.z = Math.sin(t) * radius * 0.45;
-    ref.current.position.y = 0.72 + Math.sin(t * 1.7) * 0.08;
+    if (!pack.current) return;
+    pack.current.position.y = Math.sin(clock.elapsedTime * 0.9 + phase) * 0.06;
   });
+
   return (
-    <mesh ref={ref} castShadow>
-      <icosahedronGeometry args={[0.26, 2]} />
-      <meshStandardMaterial color={color} roughness={0.6} />
-    </mesh>
+    <group
+      ref={pack}
+      position={[x, 0, 0]}
+      rotation={[0.02, x < 0 ? 0.18 : -0.18, x < 0 ? -0.06 : 0.06]}
+      name={label}
+    >
+      <mesh castShadow>
+        <boxGeometry args={[1.25, 1.72, 0.34]} />
+        <meshStandardMaterial color="#FFF8F0" roughness={0.52} />
+      </mesh>
+      <mesh position={[0, 0.84, 0]} castShadow>
+        <boxGeometry args={[1.18, 0.1, 0.39]} />
+        <meshStandardMaterial color={color} roughness={0.45} />
+      </mesh>
+      <mesh position={[0, 0.1, 0.19]}>
+        <boxGeometry args={[0.82, 0.74, 0.035]} />
+        <meshStandardMaterial color={color} roughness={0.45} />
+      </mesh>
+      <mesh position={[0, 0.12, 0.22]}>
+        <circleGeometry args={[0.2, 32]} />
+        <meshStandardMaterial color="#FFF8F0" roughness={0.4} />
+      </mesh>
+      <mesh position={[0, -0.52, 0.19]}>
+        <boxGeometry args={[0.7, 0.08, 0.035]} />
+        <meshStandardMaterial color="#E9D8CB" roughness={0.8} />
+      </mesh>
+      <mesh position={[0, -0.7, 0.19]}>
+        <boxGeometry args={[0.46, 0.06, 0.035]} />
+        <meshStandardMaterial color="#E9D8CB" roughness={0.8} />
+      </mesh>
+    </group>
   );
 }
 
-function BowlScene() {
+function MatchScene() {
   const group = useRef<THREE.Group>(null);
   useFrame(({ pointer }) => {
     if (!group.current) return;
@@ -38,41 +66,11 @@ function BowlScene() {
     group.current.rotation.x +=
       (-pointer.y * 0.08 - group.current.rotation.x) * 0.035;
   });
+
   return (
-    <group ref={group} rotation={[0.08, -0.25, 0]}>
-      <mesh position={[0, -0.22, 0]} receiveShadow>
-        <cylinderGeometry args={[1.28, 0.9, 0.65, 64, 1, true]} />
-        <meshStandardMaterial
-          color="#F55A6A"
-          roughness={0.38}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      <mesh position={[0, 0.1, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[1.08, 0.17, 18, 80]} />
-        <meshStandardMaterial color="#FFF8F0" roughness={0.42} />
-      </mesh>
-      <mesh position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.93, 64]} />
-        <meshStandardMaterial color="#7D3E2D" roughness={0.85} />
-      </mesh>
-      {[-0.62, -0.2, 0.2, 0.62].map((x, i) => (
-        <mesh
-          key={x}
-          position={[x, 0.24 + (i % 2) * 0.05, i % 2 ? -0.1 : 0.1]}
-          rotation={[0.2, i, 0.1]}
-        >
-          <dodecahedronGeometry args={[0.23, 0]} />
-          <meshStandardMaterial
-            color={i % 2 ? "#E59B52" : "#F1C77C"}
-            roughness={0.8}
-          />
-        </mesh>
-      ))}
-      <Ingredient color="#F55A6A" phase={0} />
-      <Ingredient color="#F7B84B" phase={1.6} />
-      <Ingredient color="#72C3A3" phase={3.2} />
-      <Ingredient color="#6FB7E9" phase={4.8} />
+    <group ref={group} position={[0, 0.08, 0]}>
+      <SealedPack x={-0.82} color="#F55A6A" label="S01" phase={0} />
+      <SealedPack x={0.82} color="#F7B84B" label="C02" phase={1.2} />
     </group>
   );
 }
@@ -83,12 +81,20 @@ export function TasteBowlCanvas({ locale = "en" }: { locale?: "en" | "th" }) {
       className="relative h-[280px] w-full overflow-hidden rounded-[32px] bg-[radial-gradient(circle_at_50%_38%,#fff_0,#fff0e6_48%,#ffd9c9_100%)]"
       aria-label={
         locale === "en"
-          ? "Interactive 3D Signature Bowl visualization"
-          : "ภาพชาม Signature Bowl แบบสามมิติที่โต้ตอบได้"
+          ? "Interactive 3D preview of two manufacturer-sealed partner products selected for Mochi"
+          : "ภาพตัวอย่างสินค้าพาร์ตเนอร์สองรายการที่ปิดผนึกจากผู้ผลิตและเลือกให้โมจิ"
       }
     >
+      <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center gap-2 text-[10px] font-black tracking-[0.12em] text-[var(--brown)]">
+        <span className="rounded-full border border-[var(--line)] bg-white/90 px-3 py-1.5 shadow-sm">
+          {locale === "en" ? "SEALED · S01" : "แพ็กปิดผนึก · S01"}
+        </span>
+        <span className="rounded-full border border-[var(--line)] bg-white/90 px-3 py-1.5 shadow-sm">
+          {locale === "en" ? "SEALED · C02" : "แพ็กปิดผนึก · C02"}
+        </span>
+      </div>
       <Canvas
-        camera={{ position: [0, 2.4, 5], fov: 38 }}
+        camera={{ position: [0, 0.2, 5.4], fov: 38 }}
         dpr={[1, 1.5]}
         gl={{ antialias: true, alpha: true }}
       >
@@ -99,12 +105,12 @@ export function TasteBowlCanvas({ locale = "en" }: { locale?: "en" | "th" }) {
           color="#fff8e7"
         />
         <pointLight position={[-3, 1, 2]} intensity={1.2} color="#ff8ea0" />
-        <BowlScene />
+        <MatchScene />
       </Canvas>
       <div className="pointer-events-none absolute inset-x-0 bottom-3 text-center text-xs font-bold text-[var(--muted)]">
         {locale === "en"
-          ? "Move to explore · Mochi's Signature Bowl"
-          : "ขยับเพื่อสำรวจ · Signature Bowl ของโมจิ"}
+          ? "First Match · original partner packs, never repacked"
+          : "First Match · แพ็กเดิมจากพาร์ตเนอร์ ไม่แบ่งบรรจุใหม่"}
       </div>
     </div>
   );

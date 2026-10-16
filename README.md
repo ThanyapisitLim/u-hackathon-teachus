@@ -2,9 +2,9 @@
 
 > **The payer chooses. The real user answers after checkout. PawProud lets the dog answer first.**
 
-PawProud is a mobile-first hackathon prototype for learning a dog's food preferences before asking the owner to commit to a recurring purchase. A guided Taste Trial becomes an honest, visual **TastePrint**; the owner can then buy one **First Bowl**, report how it went, and only then choose an optional subscription. The same evidence trail becomes the dog's owner-controlled **Care Passport**.
+PawProud is a mobile-first hackathon prototype for learning a dog's food preferences across eligible products from trusted existing brands before asking the owner to commit to recurring delivery. A guided Taste Trial becomes an honest, visual **TastePrint**; the owner can then buy one **First Match**, report how it went, and only then choose an optional **Adaptive Refill**. PawProud is the decision-and-replenishment layer—not another food manufacturer. The same evidence trail becomes the dog's owner-controlled **Care Passport**.
 
-**นิยามสั้นภาษาไทย:** PawProud คือระบบที่ให้น้องหมา “ตอบก่อน” ผ่านการทดลองรสชาติแบบมีโครงสร้าง บันทึกสิ่งที่เกิดขึ้นเป็น TastePrint แล้วให้เจ้าของลองซื้อเพียงหนึ่งมื้อ เช็กผลจริง และค่อยเลือก Subscription โดยข้อมูลทั้งหมดต่อเนื่องอยู่ใน Care Passport
+**นิยามสั้นภาษาไทย:** PawProud คือระบบคัดเลือกอาหารจากหลายแบรนด์ที่ให้น้องหมา “ตอบก่อน” ผ่านการทดลองแบบมีโครงสร้าง บันทึกสิ่งที่เกิดขึ้นเป็น TastePrint แล้วให้เจ้าของลองซื้อ First Match ครั้งเดียว เช็กผลจริง และค่อยเลือก Adaptive Refill โดยข้อมูลทั้งหมดต่อเนื่องอยู่ใน Care Passport
 
 This is not a service-dog provider. It borrows the care discipline behind good assistance-dog systems—welfare, fit, preparation, continuity, clear roles, and follow-up—and applies that thinking to everyday owner–dog care. It does not train, certify, register, or create legal access rights for service dogs.
 
@@ -33,6 +33,7 @@ Supporting Thai documents:
 
 - [Product Experience Blueprint](docs/product-design-blueprint-th.md) — journeys, flows, screens, service blueprint, design system, and earlier build plan.
 - [Hackathon Source of Truth v2](docs/hackathon-source-of-truth-v2-th.md) — business thesis, market logic, operations, impact, pitch, and decision log.
+- [Multi-brand Market Model](docs/market-model-multibrand-th.md) — current market boundary, market-sizing ladder, revenue bridge, competition, and Thai operating constraints. This document overrides older proprietary-formula assumptions.
 - [Evidence & Insight Library](docs/hackathon-evidence-insight-library-th.md) — statistics, source registry, evidence strength, limitations, and safe claim language.
 
 ## Run locally
@@ -108,4 +109,4 @@ docs/                       current requirements, research, and design sources
 5. Test the complete mobile journey, not only isolated components. All controls shown as actionable should work or be explicitly labelled as a preview.
 6. Before handing off, run `npm run typecheck` and `npm run build`, then report what was tested and any known limitation.
 
-PawProud is designed to earn trust through small observable proof: **try first, learn once, pay for one bowl, verify acceptance, then decide whether to repeat.**
+PawProud is designed to earn trust through small observable proof: **try first, learn once, pay for one matched order, verify acceptance, then decide whether to refill.**

@@ -396,7 +396,7 @@ function ProductHeader({
 }) {
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--line)]/70 bg-[rgba(255,248,240,.94)] backdrop-blur-xl">
-      <div className="mx-auto flex h-[62px] max-w-[500px] items-center justify-between px-4">
+      <div className="mx-auto flex h-[62px] max-w-[500px] items-center justify-between px-4 md:max-w-[540px] md:border-x md:border-[var(--line)] md:bg-[rgba(255,248,240,.98)] md:px-6">
         <div className="flex min-w-0 items-center gap-2.5">
           {onBack ? (
             <button
@@ -458,18 +458,21 @@ function BottomNav({
     { key: "more", label: tx[l].more, icon: <SlidersHorizontal size={20} /> },
   ];
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-[500px] border-t border-[var(--line)] bg-[rgba(255,255,255,.96)] px-2 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
-      <div className="grid grid-cols-5">
+    <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-[500px] border-t border-[var(--line)] bg-[rgba(255,255,255,.96)] px-2 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl md:max-w-[540px] md:rounded-t-[24px] md:border-x md:shadow-[0_-10px_35px_rgba(85,43,32,.08)]">
+      <div className="grid grid-cols-5 gap-0.5">
         {items.map((i) => (
           <button
             key={i.key}
             onClick={() => go(i.key)}
-            className={`pressable flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-2xl text-[10px] font-bold ${screen === i.key ? "bg-[var(--soft)] text-[var(--coral-dark)]" : "text-[var(--muted)]"}`}
+            aria-label={i.label}
+            className={`pressable flex min-h-[56px] min-w-0 flex-col items-center justify-center gap-1 rounded-2xl font-bold ${screen === i.key ? "bg-[var(--soft)] text-[var(--coral-dark)]" : "text-[var(--muted)]"}`}
           >
             <span className={screen === i.key ? "-translate-y-0.5" : ""}>
               {i.icon}
             </span>
-            {i.label}
+            <span className="block max-w-full truncate px-0.5 text-[9px] leading-3 tracking-[-.025em] min-[380px]:text-[10px]">
+              {i.label}
+            </span>
           </button>
         ))}
       </div>
@@ -485,7 +488,7 @@ function Shell({
   footer?: React.ReactNode;
 }) {
   return (
-    <main className="mx-auto min-h-[calc(100vh-63px)] max-w-[500px] px-4 pb-28 pt-5">
+    <main className="mx-auto min-h-[calc(100vh-63px)] max-w-[500px] px-4 pb-28 pt-5 md:max-w-[540px] md:border-x md:border-[var(--line)] md:bg-[rgba(255,248,240,.82)] md:px-6 md:shadow-[0_24px_80px_rgba(85,43,32,.11)]">
       <AnimatePresence mode="wait">
         <motion.div
           key={(children as React.ReactElement)?.key ?? "screen"}
@@ -1438,8 +1441,8 @@ function Feedback({
           </div>
         </div>
       </section>
-      <section className="relative border-l-2 border-[var(--trust)]/25 pl-5">
-        <span className="absolute -left-[19px] top-0 grid h-9 w-9 place-items-center rounded-full bg-[var(--sky)] text-[var(--trust)] ring-4 ring-[var(--cream)]">
+      <section className="relative ml-1 border-l-2 border-[var(--trust)]/25 pl-7">
+        <span className="absolute -left-[17px] top-0 grid h-8 w-8 place-items-center rounded-full bg-[var(--sky)] text-[var(--trust)] ring-[3px] ring-[var(--canvas)]">
           <Sparkles size={18} />
         </span>
         <div className="flex items-center justify-between">
@@ -1635,8 +1638,8 @@ function TastePrintScreen({
               ? "Repeat taste trial"
               : "ทดลองรสชาติอีกครั้ง"
             : l === "en"
-              ? "Continue to First Bowl"
-              : "ไปที่ First Bowl"}
+              ? "Continue to First Match"
+              : "ไปที่ First Match"}
         </AppButton>
       </div>
     </>
@@ -1653,9 +1656,8 @@ function FirstBowl({
   choice: Choice;
 }) {
   const chicken = choice === "chicken";
-  const bowl = chicken ? "Chicken First Bowl" : "Salmon First Bowl";
-  const bowlName =
-    l === "en" ? bowl : chicken ? "First Bowl รสไก่" : "First Bowl รสแซลมอน";
+  const bowl = chicken ? "Partner SKU C02 · Chicken" : "Partner SKU S01 · Salmon";
+  const bowlName = l === "en" ? bowl : chicken ? "Partner SKU C02 · ไก่" : "Partner SKU S01 · แซลมอน";
   return (
     <>
       <Eyebrow>
@@ -1666,11 +1668,11 @@ function FirstBowl({
       <PageTitle
         sub={
           l === "en"
-            ? "3 portions · one-time purchase · no subscription"
-            : "3 มื้อ · ซื้อครั้งเดียว · ไม่มี Subscription"
+            ? "Manufacturer-sealed samples · one-time purchase · no refill"
+            : "ตัวอย่างปิดผนึกจากผู้ผลิต · ซื้อครั้งเดียว · ไม่เติมอัตโนมัติ"
         }
       >
-        {l === "en" ? "First Bowl" : "First Bowl"}
+        {l === "en" ? "First Match" : "First Match"}
       </PageTitle>
       <div className="relative mt-6">
         <motion.div
@@ -1691,8 +1693,8 @@ function FirstBowl({
               <h2 className="display mt-2 text-2xl font-black">{bowlName}</h2>
               <p className="mt-1 text-sm text-[var(--muted)]">
                 {l === "en"
-                  ? "3 guided portions · simulated product"
-                  : "3 มื้อพร้อมคำแนะนำ · ผลิตภัณฑ์จำลอง"}
+                  ? "Demo partner catalog · original packs stay sealed"
+                  : "แคตตาล็อกพาร์ตเนอร์จำลอง · คงแพ็กเดิมปิดผนึก"}
               </p>
             </div>
             <p className="text-right text-xl font-black">฿149</p>
@@ -1731,16 +1733,16 @@ function FirstBowl({
           icon={<ShoppingBag size={18} />}
         >
           {l === "en"
-            ? "Buy First Bowl once · ฿149"
-            : "ซื้อ First Bowl ครั้งเดียว · ฿149"}
+            ? "Buy First Match once · ฿149"
+            : "ซื้อ First Match ครั้งเดียว · ฿149"}
         </AppButton>
       </div>
       <p className="mt-3 flex items-start justify-center gap-1.5 text-center text-xs font-bold text-[var(--success)]">
         <Check className="mt-px shrink-0" size={15} />
         <span>
           {l === "en"
-            ? "No recurring charge. Subscription is not enabled."
-            : "ไม่มีค่าบริการต่อเนื่อง และยังไม่เปิด Subscription"}
+            ? "No recurring charge. Adaptive Refill is not enabled."
+            : "ไม่มีค่าบริการต่อเนื่อง และยังไม่เปิด Adaptive Refill"}
         </span>
       </p>
     </>
@@ -1759,11 +1761,11 @@ function Checkout({
   const bowl =
     choice === "chicken"
       ? l === "en"
-        ? "Chicken First Bowl"
-        : "First Bowl รสไก่"
+        ? "Partner SKU C02 · Chicken"
+        : "Partner SKU C02 · ไก่"
       : l === "en"
-        ? "Salmon First Bowl"
-        : "First Bowl รสแซลมอน";
+        ? "Partner SKU S01 · Salmon"
+        : "Partner SKU S01 · แซลมอน";
   return (
     <>
       <div className="flex items-center justify-between">
@@ -1788,8 +1790,8 @@ function Checkout({
               <p className="font-black">{bowl}</p>
               <p className="text-xs text-[var(--muted)]">
                 {l === "en"
-                  ? "3 guided portions · Qty 1"
-                  : "3 มื้อพร้อมคำแนะนำ · 1 ชุด"}
+                  ? "Manufacturer-sealed demo samples · Qty 1"
+                  : "ตัวอย่างจำลองในแพ็กผู้ผลิตปิดผนึก · 1 ชุด"}
               </p>
             </div>
             <p className="font-black">฿149</p>
@@ -1831,7 +1833,7 @@ function Checkout({
         </div>
       </div>
       <div className="mt-6 border-l-4 border-[var(--success)] bg-gradient-to-r from-[var(--mint)] to-transparent py-3 pl-4 text-sm text-[var(--success)]">
-        <strong>{l === "en" ? "Subscription:" : "Subscription:"}</strong>{" "}
+        <strong>{l === "en" ? "Adaptive Refill:" : "Adaptive Refill:"}</strong>{" "}
         {l === "en"
           ? "Off · this demo will not charge or ship anything."
           : "ปิด · เดโมนี้จะไม่เรียกเก็บเงินหรือจัดส่งจริง"}
@@ -2032,8 +2034,8 @@ function Subscription({
       <PageTitle
         sub={
           l === "en"
-            ? "Mochi accepted the First Bowl. Choose one-time orders or an optional delivery plan."
-            : "โมจิยอมรับ First Bowl แล้ว เลือกซื้อครั้งเดียวหรือแผนจัดส่งแบบเลือกได้"
+            ? "Mochi accepted the First Match. Choose one-time orders or an optional adaptive refill."
+            : "โมจิยอมรับ First Match แล้ว เลือกซื้อครั้งเดียวหรือ Adaptive Refill แบบไม่บังคับ"
         }
       >
         {l === "en" ? "Delivery options" : "ตัวเลือกการจัดส่ง"}
@@ -2045,7 +2047,7 @@ function Subscription({
               {l === "en" ? "OPTIONAL" : "ทางเลือก"}
             </TinyBadge>
             <h2 className="display mt-2 text-2xl font-black">
-              {l === "en" ? "Recurring delivery" : "จัดส่งแบบต่อเนื่อง"}
+              {l === "en" ? "Adaptive Refill" : "Adaptive Refill"}
             </h2>
           </div>
           <span className="font-black">
@@ -2525,8 +2527,8 @@ function Plan({
               ? "Plan paused."
               : "พักแผนอยู่"
             : l === "en"
-              ? "Signature Bowl Plan"
-              : "แผน Signature Bowl"
+              ? "Match Refill Plan"
+              : "แผนเติม Match"
           : l === "en"
             ? "Buy only when it makes sense."
             : "ซื้อเมื่อเหมาะสมเท่านั้น"}
@@ -2548,7 +2550,7 @@ function Plan({
                 <span className="text-sm font-black">฿790</span>
               </div>
               <h2 className="display mt-4 text-2xl font-black">
-                {l === "en" ? "Next Signature Bowl" : "Signature Bowl ถัดไป"}
+                {l === "en" ? "Next matched delivery" : "Match รอบถัดไป"}
               </h2>
               <p className="mt-1 text-sm text-white/65">
                 {state.skipped
@@ -2630,8 +2632,8 @@ function Plan({
           <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
             {accepted
               ? l === "en"
-                ? "Mochi accepted the First Bowl. A plan is now available—but still optional."
-                : "โมจิยอมรับ First Bowl แล้ว ตอนนี้มีแผนให้เลือก แต่ไม่บังคับ"
+                ? "Mochi accepted the First Match. Adaptive Refill is available—but still optional."
+                : "โมจิยอมรับ First Match แล้ว ตอนนี้มี Adaptive Refill ให้เลือก แต่ไม่บังคับ"
               : state.warningReported
                 ? l === "en"
                   ? "A warning sign paused repeat ordering. Review safety guidance first."
@@ -2641,8 +2643,8 @@ function Plan({
                     ? "Mochi skipped the bowl. Repeat learning before considering a plan."
                     : "โมจิไม่กินชามนี้ ควรเรียนรู้ซ้ำก่อนพิจารณาแผน"
                   : l === "en"
-                    ? "Complete the First Bowl and meal check-in before considering a plan."
-                    : "ทำ First Bowl และเช็กมื้ออาหารก่อนพิจารณาแผน"}
+                    ? "Complete the First Match and meal check-in before considering a plan."
+                    : "ทำ First Match และเช็กมื้ออาหารก่อนพิจารณาแผน"}
           </p>
           <button
             onClick={() =>
@@ -3006,7 +3008,7 @@ function Delivery({ l, ordered }: { l: Locale; ordered: boolean }) {
             : "ตัวอย่างการสื่อสารความน่าเชื่อถือของบริการจริง"
         }
       >
-        {l === "en" ? "Know where every bowl is." : "รู้ว่าทุกชามอยู่ที่ไหน"}
+        {l === "en" ? "Know where every item came from." : "รู้ที่มาของสินค้าทุกชิ้น"}
       </PageTitle>
       <div className="mt-6 rounded-[30px] border border-[var(--line)] bg-white p-5 shadow-soft">
         <div className="flex items-center justify-between">

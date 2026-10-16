@@ -8,7 +8,7 @@
 
 **Competition:** U-Hackathon by U-Topia
 
-> **Latest decisions in this file override older scope details elsewhere in `docs/`.** The earlier research remains valuable, but this build has no physical-box deliverable, does not need a real preference model, and uses live AI only for feedback/explanation.
+> **Latest decisions in this file override older scope details elsewhere in `docs/`.** The earlier research remains valuable, but this build has no physical-box deliverable, does not need a real preference model, and uses live AI only for feedback/explanation. For category definition, sizing, revenue bridge, competition, and the sealed-food operating boundary, [`market-model-multibrand-th.md`](market-model-multibrand-th.md) is canonical.
 
 ## Verified build snapshot
 
@@ -24,13 +24,15 @@
 
 **Hook:** The payer chooses. The real user answers after checkout. **PawProud lets the dog answer first.**
 
-PawProud is a care system that begins with a beautifully designed food-learning service. An owner compares two tastes, records what the dog actually does, and receives an honest visual **TastePrint**. Instead of forcing a subscription, PawProud offers one paid **First Bowl**, checks whether the dog accepts it in real life, and only then offers an optional recurring plan. The resulting evidence is kept in an owner-controlled **Care Passport**.
+PawProud is a care system that begins with a beautifully designed, **brand-independent food-learning service**. An owner compares selected products from trusted registered brands, records what the dog actually does, and receives an honest visual **TastePrint**. Instead of manufacturing another formula or forcing a subscription, PawProud offers one paid **First Bowl**, checks whether the dog accepts it in real life, and only then offers flexible replenishment. The resulting evidence is kept in an owner-controlled **Care Passport**.
 
-**นิยามภาษาไทย:** PawProud คือระบบดูแลที่ให้น้องหมา “ตอบก่อน” ด้วยการทดลองรสชาติอย่างมีโครงสร้าง บันทึกสิ่งที่เจ้าของเห็นเป็น TastePrint แล้วให้ลองซื้อเพียงหนึ่งมื้อ เช็กผลหลังใช้งานจริง และค่อยตัดสินใจสมัครต่อ ข้อมูลทั้งหมดถูกเก็บอย่างต่อเนื่องใน Care Passport
+**นิยามภาษาไทย:** PawProud คือระบบดูแลที่ให้น้องหมา “ตอบก่อน” ด้วยการทดลองผลิตภัณฑ์จากหลายแบรนด์อย่างมีโครงสร้าง บันทึกสิ่งที่เจ้าของเห็นเป็น TastePrint แล้วให้ลองซื้อครั้งเดียว เช็กผลหลังใช้งานจริง และค่อยตัดสินใจให้ระบบเติมของที่ยังเหมาะต่อ ข้อมูลทั้งหมดถูกเก็บอย่างต่อเนื่องใน Care Passport
 
 The hackathon proposition is not “another personalised dog-food subscription.” It is:
 
 > **Try first → learn from behaviour → pay once → verify acceptance → subscribe only after proof.**
+
+**Market position:** PawProud is a **multi-brand food-discovery and managed-replenishment platform**. The dog-food category is the transaction pool underneath the service, not a second market and not PawProud revenue.
 
 The food flow is intentionally the most convincing proof of PawProud's wider care philosophy. If the system can be careful, transparent, and useful in a frequent everyday decision, it can earn the right to support more parts of the owner–dog relationship later.
 
@@ -64,7 +66,7 @@ PawProud reverses that order. The trial creates an observable event before a com
 
 This chain supports both social value and business logic:
 
-- **Direct value:** Taste Trial, one-time First Bowl, optional recurring food plan, and future paid support services.
+- **Direct value:** Taste Trial, a one-time order selected across trusted registered brands, optional managed replenishment, and future paid support services.
 - **Indirect value:** trusted referrals or partnerships with veterinarians, clinics, grooming, hygiene, training, travel, and other care providers—only with transparent incentives and owner consent.
 - **Retention logic:** the user returns because the dog's context changes with meals, age, health, routine, environment, and life events—not because PawProud manufactures notifications.
 
@@ -148,7 +150,7 @@ The dog is not the payer and cannot complete a form, but its behaviour is the ke
 - multi-caregiver sharing, travel/jurisdiction modules, and service-dog-team support;
 - real sensory sample operations, nutrition QA, traceability, recalls, and fulfilment.
 
-The longer-term “signature mix” idea is a preference-memory and modular-service hypothesis, not permission for an algorithm to formulate a complete diet. Age, health, allergies, nutrition, and medication require qualified review and validated operations before they can influence a real food product.
+The operating model is **selection, sequencing, portion guidance, replenishment, and feedback learning across existing registered products**. At launch, manufacturer-sealed products are fulfilled by licensed partners. PawProud does not open, mix, divide, or relabel food: those actions move the service into regulated production/repacking with additional registration, facility, labelling, QA, and traceability obligations. Age, health, allergies, nutrition, therapeutic diets, and medication require qualified review.
 
 ## 6. Product architecture: two experiences, semantic product routes
 
@@ -432,6 +434,7 @@ The evidence establishes significance and design direction. It does **not** conv
 | Greater Bangkok was estimated at **1,290,848 owned dogs** and roughly **805,000 dog-owning households** from a 2023 survey/model. [Peer-reviewed study](https://pmc.ncbi.nlm.nih.gov/articles/PMC12070910/) | The initial service geography can still affect a large base. | Estimates are not direct counts or demonstrated demand. |
 | In an online survey of 411 Thai dog owners, **palatability 60.1%**, **price/discount 57.7%**, and **brand 49.6%** were frequently selected purchase factors. [Veterinary World](https://veterinaryworld.org/Vol.18/October-2025/19.pdf) | Taste response matters alongside economics and trust; the wedge is relevant. | Multi-select, younger/female-skewed sample; not national prevalence or willingness to subscribe. |
 | Thailand's 2025 dog-food retail market was reported at **US$988.4 million**. [Agriculture and Agri-Food Canada / Euromonitor summary](https://agriculture.canada.ca/en/international-trade/reports-and-guides/sector-trend-analysis-pet-food-thailand) | Food is a large physical category with repeated behaviour. | This is not PawProud's TAM, serviceable market, or projected revenue. |
+| Using the published 13.8% pet-food e-commerce share and Greater Bangkok's 14.15% share of the two sources' owned-dog estimates gives a **calculated ≈฿656M Greater Bangkok online dog-food GMV ceiling** at an explicit ฿34/US$ assumption. | This is a transparent first channel-and-geography pool for an online service. | It is not proven demand, PawProud revenue, or a forecast; it combines source years and uses two proxies. |
 | “Pet is bored with the same food” scored only **2.76/7** in a mixed international pet-owner survey, while nutrition, benefit, and consistent quality scored much higher. [Study](https://pmc.ncbi.nlm.nih.gov/articles/PMC6515811/) | Avoid a universal “bored dog” story; lead with fit, quality, and uncertainty reduction. | It does not mean no individual dog has preferences or rejects a food. |
 | A six-dog pilot found first choice matched the most-consumed food in **89%** of tests. [Pilot study](https://pmc.ncbi.nlm.nih.gov/articles/PMC5863557/) | Observable choice may contain an individual preference signal worth studying. | The sample is far too small to validate a commercial algorithm. |
 | Among 16 dogs in a reward study, six preferred variety, six consistency, and four were unclear. [Study](https://pmc.ncbi.nlm.nih.gov/articles/PMC6021384/) | Dogs differ; automatic novelty or rotation is not always better. | Rewards are not complete meals, and the sample is small. |
@@ -442,6 +445,7 @@ Use [the Evidence & Insight Library](hackathon-evidence-insight-library-th.md) f
 - never add overlapping problem populations;
 - never turn an association into a causal claim;
 - never use retail category value as subscription TAM;
+- never present GMV as PawProud revenue; show `fulfilled GMV × take rate + service fees` separately;
 - never generalise a pilot preference test into algorithm accuracy;
 - always keep geography, year, sample, denominator, and caveat with the number;
 - distinguish external evidence, calculation, product hypothesis, prototype result, and future concept.
@@ -560,7 +564,7 @@ Cloudflare bindings live in `frontend/wrangler.jsonc`. No OpenAI API key is requ
 | AI fallback | **Real deterministic fallback** | Show `Safe fallback`; preserve the same guardrails. |
 | Preference inference / TastePrint values | **Simulated** | Label as early/simulated; show unknown dimensions. |
 | Camera viewfinder and captured preview | **Interactive simulation** | No device permission, stored photo, upload, or image analysis; the owner confirms the actual observations that PawSense reads. |
-| First Bowl product and recipe | **Concept** | No nutrition, manufacturing, or suitability claim. |
+| First Bowl multi-brand selection | **Concept** | No nutrition, manufacturing, or suitability claim; use sealed registered products and licensed fulfilment in a real launch. |
 | Checkout/payment | **Simulated** | No charge; no credential collection; visible one-time framing. |
 | Delivery timeline | **Simulated** | No live tracking claim. |
 | Subscription billing/fulfilment | **Simulated** | Pause, skip, and cancel interaction must still work locally. |
@@ -652,10 +656,11 @@ Cloudflare bindings live in `frontend/wrangler.jsonc`. No OpenAI API key is requ
 Use these documents in this order:
 
 1. **This file — current collaborator and implementation contract.**
-2. [Product Experience Blueprint](product-design-blueprint-th.md) — detailed journeys, flows, diagrams, screen logic, design, and service architecture. Its physical-kit sections are historical/future context for this build.
-3. [Hackathon Source of Truth v2](hackathon-source-of-truth-v2-th.md) — fuller business reasoning, market context, operational logic, pitch, Q&A, and decision history. Any physical prototype requirement there is superseded here.
-4. [Evidence & Insight Library](hackathon-evidence-insight-library-th.md) — evidence dashboard, metric dictionary, source registry, and claim limitations.
-5. Current code and verified deployed behaviour.
+2. [Multi-brand Market Model](market-model-multibrand-th.md) — canonical category boundary, sizing ladder, revenue bridge, competition, and launch operating model. It overrides older proprietary-formula or PawProud-mixed-food assumptions.
+3. [Product Experience Blueprint](product-design-blueprint-th.md) — detailed journeys, flows, diagrams, screen logic, design, and service architecture. Its physical-kit sections are historical/future context for this build.
+4. [Hackathon Source of Truth v2](hackathon-source-of-truth-v2-th.md) — fuller business reasoning, market context, operational logic, pitch, Q&A, and decision history. Any physical prototype or custom-formula requirement there is superseded here.
+5. [Evidence & Insight Library](hackathon-evidence-insight-library-th.md) — evidence dashboard, metric dictionary, source registry, and claim limitations.
+6. Current code and verified deployed behaviour.
 
 When a new decision changes the funnel, truth boundary, target user, safety rule, AI role, or deliverable scope:
 

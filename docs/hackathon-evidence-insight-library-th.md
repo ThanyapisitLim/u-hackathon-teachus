@@ -839,6 +839,35 @@ CAGR = (988.4 ÷ 601.8)^(1/5) − 1 = 10.4% ต่อปี
 
 สัดส่วน prepared dog food เพิ่มจาก **26% ในปี 2020 เป็น 32% ในปี 2025** ซึ่งควรเรียกว่า **เพิ่ม 6 จุดร้อยละ** หรือเพิ่มเชิงสัมพัทธ์ 23.1% ไม่ใช่ “เพิ่ม 6%” [S01](https://agriculture.canada.ca/en/international-trade/reports-and-guides/sector-trend-analysis-pet-food-thailand)
 
+#### 14.3.1 Market ladder สำหรับบริการ multi-brand
+
+PawProud เป็นชั้นค้นหา–ตัดสินใจ–จัดส่งซ้ำเหนืออาหารหลายแบรนด์ จึงต้อง size เงินที่ระบบอาจ route ก่อน แล้วค่อยแยกรายได้แพลตฟอร์ม:
+
+```text
+National online dog-food GMV proxy
+= US$988.4M × 13.8% pet-food e-commerce share
+= US$136.40M
+≈ ฿4.64B ที่สมมติฐาน ฿34/US$
+
+Greater Bangkok owned-dog proxy
+= 1.290848M ÷ 9.1239M
+= 14.15%
+
+Greater Bangkok online dog-food GMV ceiling
+= US$988.4M × 13.8% × 14.15% × ฿34/US$
+≈ ฿656.1M/year
+```
+
+ข้อจำกัดที่ต้องแสดงพร้อมตัวเลข:
+
+- 13.8% เป็น channel share ของ pet food รวม ไม่ใช่ dog food โดยตรง
+- 14.15% เปรียบเทียบแบบจำลองประเทศปี 2025 กับค่าประมาณ Greater Bangkok ปี 2023
+- สมมติว่าค่าใช้จ่ายต่อสุนัขในพื้นที่เท่าค่าเฉลี่ยประเทศ
+- ฿656M คือ `channel + geography ceiling` ไม่ใช่ proven SAM, revenue หรือ forecast
+- PawProud revenue ต้องเขียนแยกเป็น `fulfilled GMV × margin/take rate + service fees`
+
+Need-state scenario 15–30% ของ ceiling ให้ประมาณ **฿98–197M GMV/ปี** และหากสมมติ take rate 15% จะเป็น revenue-pool scenario **฿14.8–29.5M/ปี** ตัวคูณทั้งสองเป็นสมมติฐาน planning เท่านั้น ดู logic เต็มใน [Multi-brand Market Model](market-model-multibrand-th.md)
+
 ### 14.4 Market intensity ไม่ใช่ราคาสมาชิก
 
 ```text
@@ -1094,7 +1123,7 @@ Evidence: palatability 60.1% ใน online Thai sample n=411
 
 ### ตลาดใหญ่แค่ไหน
 
-ประเทศไทยมีฐานประมาณการ **6.66 ล้านครัวเรือนเลี้ยงสุนัขและ 9.12 ล้านสุนัข** ส่วนพื้นที่เริ่มต้นกรุงเทพฯ และปริมณฑลมีประมาณ **805,000 ครัวเรือนและ 1.29 ล้านสุนัข** ตัวเลขนี้ยืนยันว่าฐานผลกระทบใหญ่พอ แต่ไม่ใช่จำนวนลูกค้าที่จะซื้อบริการ `[M01–M04]`
+ตลาดอาหารสุนัขไทยปี 2025 มี transaction pool ประมาณ **US$988.4M หรือ ฿33.61B** แต่ PawProud ไม่อ้างว่าทั้งหมดเป็นรายได้ของเรา เมื่อใช้ e-commerce share 13.8% และสัดส่วนประชากรสุนัข Greater Bangkok 14.15% เป็น proxy จะได้ channel-and-geography ceiling แรกประมาณ **฿656M GMV/ปี** จากนั้นต้องกรอง relevant need, eligibility, willingness to trial และ partner reach ก่อนเรียก SAM รายได้ PawProud แยกเป็น routed GMV × take rate บวก service fee `[M01–M04; Calculation 14.3.1]`
 
 ### ทำไมไม่ทำแอปอย่างเดียว
 
@@ -1133,6 +1162,7 @@ Evidence: palatability 60.1% ใน online Thai sample n=411
 | 16 ต.ค. 2026 | 1.0 | สร้าง Evidence & Insight Library แยกจาก Source of Truth; รวมฐานตลาดไทย/Greater Bangkok, Owner–Dog, Food, human service, emergency, service-dog guardrails, repeat use, social impact, claim library, calculation notebook และ source registry |
 | 16 ต.ค. 2026 | 1.1 | ตรวจสถิติและโครงสร้างซ้ำ: แยก dashboard ID จากชนิดข้อความ แก้ตัวหาร clinic visit/เหตุผลวัคซีน แก้ OR และฐาน RCVS ลด pseudo-precision แยก external/product metrics และเพิ่มสถานะ D/H ให้ cadence/scorecard |
 | 16 ต.ค. 2026 | 1.2 | ระบุหน่วยของคำตอบเหตุผลวัคซีนให้ไม่สื่อว่าเป็นเจ้าของไม่ซ้ำ ตัดความแม่นยำเกินจริงจากฐาน 13.2% แยกหลักฐานพิษวิทยาจากสมมติฐาน workflow เพิ่มรหัสแหล่งใน Calculation notebook และปรับชื่อเส้นทาง Food Trial & Subscription ให้คงที่ |
+| 16 ต.ค. 2026 | 1.3 | เพิ่ม market ladder สำหรับ multi-brand discovery/replenishment แยก category GMV, serviceable ceiling, need-state scenario และ platform revenue พร้อม assumptions |
 
 ---
 

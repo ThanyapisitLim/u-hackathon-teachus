@@ -27,7 +27,8 @@ export const metadata: Metadata = {
   icons: { icon: "/brand/pawproud-app-icon.webp" },
   openGraph: {
     title: "PawProud",
-    description: "Try small. Buy one bowl. Subscribe only after proof.",
+    description:
+      "Try small. Find a match across trusted brands. Refill only after proof.",
     images: ["/brand/pawproud-app-icon.webp"],
   },
 };
