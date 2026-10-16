@@ -8,12 +8,9 @@ import {
   ArrowRight,
   Check,
   CircleAlert,
-  Dog,
   Languages,
   PawPrint,
   Play,
-  Receipt,
-  ShoppingBag,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -124,7 +121,7 @@ function BowlStillLife() {
         <div className="h-3 w-20 rounded bg-[var(--coral)]" />
         <div className="mt-2 h-2 w-full rounded bg-[var(--line)]" />
         <div className="mt-2 h-2 w-3/4 rounded bg-[var(--line)]" />
-        <ShoppingBag className="mt-5 text-[var(--coral-dark)]" size={34} />
+        <div className="mt-5 text-3xl">🛍️</div>
       </motion.div>
       <div className="absolute bottom-[14%] left-[8%] right-[8%] h-[29%] rounded-[50%] border-[18px] border-[#e5c5aa] bg-[var(--chocolate)] shadow-[0_24px_0_#bd8c6b,0_34px_55px_rgba(75,40,28,.2)]">
         <span className="absolute inset-x-0 top-[30%] text-center text-4xl opacity-45">
@@ -136,7 +133,7 @@ function BowlStillLife() {
         transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
         className="absolute bottom-[2%] right-[4%] grid h-24 w-24 place-items-center rounded-[30px] bg-white text-5xl shadow-soft"
       >
-        <Receipt size={44} className="text-[var(--chocolate)]" />
+        🧾
       </motion.div>
       <motion.div
         animate={{ scale: [1, 1.06, 1] }}
@@ -713,7 +710,7 @@ export function StoryExperience() {
                 <StoryTag light>CARE PASSPORT</StoryTag>
                 <p className="display mt-3 text-3xl font-black">Mochi</p>
               </div>
-              <Dog size={52} />
+              <span className="text-5xl">🐶</span>
             </div>
             <div className="relative mt-7 pl-10">
               <div className="absolute bottom-3 left-4 top-3 w-1 rounded-full bg-gradient-to-b from-[var(--coral)] via-[var(--honey)] to-[#71c8a6]" />

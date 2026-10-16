@@ -1,19 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans_Thai } from "next/font/google";
 import "./globals.css";
-
-const sans = IBM_Plex_Sans_Thai({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["thai", "latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-const mono = IBM_Plex_Mono({
-  weight: ["400", "500"],
-  subsets: ["latin"],
-  variable: "--font-mono",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://pawproud.pawproud-u-hackathon.workers.dev"),
@@ -30,12 +16,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#faf7f1",
+  themeColor: "#fff8f0",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+    <html lang="en">
       <body>{children}</body>
     </html>
   );
