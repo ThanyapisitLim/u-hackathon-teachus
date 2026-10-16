@@ -3,6 +3,7 @@
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowLeft,
@@ -15,6 +16,9 @@ import {
   CreditCard,
   Dog,
   Download,
+  Drumstick,
+  Eye,
+  Fish,
   HeartPulse,
   Home,
   Languages,
@@ -24,11 +28,13 @@ import {
   PawPrint,
   Play,
   RotateCcw,
+  CircleOff,
   ShieldCheck,
   ShoppingBag,
   SkipForward,
   SlidersHorizontal,
   Sparkles,
+  Smile,
   Truck,
   UserRound,
   Utensils,
@@ -38,7 +44,12 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { CameraMoment } from "./CameraMoment";
+import { FoodServiceDetail } from "./FoodServiceDetail";
+import { PawProudLoader } from "./PawProudLoader";
+import { ServiceHome } from "./ServiceHome";
 import { TastePrint } from "./TastePrint";
+import { TasteInterpreter } from "./TasteInterpreter";
 
 const TasteBowlCanvas = dynamic(
   () => import("./TasteBowlCanvas").then((module) => module.TasteBowlCanvas),
@@ -46,8 +57,10 @@ const TasteBowlCanvas = dynamic(
     ssr: false,
     loading: () => (
       <div className="grid h-[280px] place-items-center rounded-[32px] bg-[var(--soft)]">
-        <div className="animate-bob text-center text-4xl">
-          🥣
+        <div className="animate-bob text-center">
+          <span className="mx-auto grid h-16 w-16 place-items-center rounded-[22px] bg-white text-[var(--coral-dark)] shadow-sm">
+            <Utensils size={30} />
+          </span>
           <span className="mt-2 block text-xs font-black text-[var(--muted)]">
             Preparing the 3D bowl…
           </span>
@@ -58,11 +71,20 @@ const TasteBowlCanvas = dynamic(
 );
 
 type Locale = "en" | "th";
+export type ProductEntry =
+  | "hub"
+  | "food"
+  | "food-trial"
+  | "ai"
+  | "passport";
 type Screen =
   | "welcome"
+  | "foodService"
+  | "aiGuide"
   | "safety"
   | "safetyHold"
   | "trial"
+  | "camera"
   | "observe"
   | "feedback"
   | "tasteprint"
@@ -79,9 +101,23 @@ type Screen =
   | "delivery"
   | "help";
 type Choice = "chicken" | "salmon" | "unclear" | null;
+type FoodTrialStep =
+  | "safety"
+  | "safetyHold"
+  | "trial"
+  | "camera"
+  | "observe"
+  | "feedback"
+  | "tasteprint"
+  | "firstBowl"
+  | "checkout"
+  | "receipt"
+  | "checkin"
+  | "subscription";
 type AppState = {
   locale: Locale;
   screen: Screen;
+  foodTrialStep: FoodTrialStep;
   choice: Choice;
   approach: string;
   intake: string;
@@ -101,7 +137,8 @@ type AppState = {
 
 const seed: AppState = {
   locale: "en",
-  screen: "welcome",
+  screen: "today",
+  foodTrialStep: "safety",
   choice: null,
   approach: "",
   intake: "",
@@ -119,6 +156,69 @@ const seed: AppState = {
   tutorialDone: false,
 };
 
+type PersistedCareState = Omit<AppState, "screen">;
+
+const STORAGE_KEY = "pawproud-demo-v2";
+const LEGACY_STORAGE_KEY = "pawproud-demo-v1";
+const MIN_PROCESSING_TIME_MS = 1400;
+const FOOD_TRIAL_STEPS: FoodTrialStep[] = [
+  "safety",
+  "safetyHold",
+  "trial",
+  "camera",
+  "observe",
+  "feedback",
+  "tasteprint",
+  "firstBowl",
+  "checkout",
+  "receipt",
+  "checkin",
+  "subscription",
+];
+
+function isFoodTrialStep(value: unknown): value is FoodTrialStep {
+  return FOOD_TRIAL_STEPS.includes(value as FoodTrialStep);
+}
+
+async function waitForMinimumProcessingTime(startedAt: number) {
+  const remaining = MIN_PROCESSING_TIME_MS - (Date.now() - startedAt);
+  if (remaining <= 0) return;
+  await new Promise<void>((resolve) => window.setTimeout(resolve, remaining));
+}
+
+function persistedCareState(state: AppState): PersistedCareState {
+  return {
+    locale: state.locale,
+    foodTrialStep: state.foodTrialStep,
+    choice: state.choice,
+    approach: state.approach,
+    intake: state.intake,
+    energy: state.energy,
+    feedback: state.feedback,
+    feedbackLocale: state.feedbackLocale,
+    feedbackSource: state.feedbackSource,
+    ordered: state.ordered,
+    checkedIn: state.checkedIn,
+    checkin: state.checkin,
+    warningReported: state.warningReported,
+    subscribed: state.subscribed,
+    paused: state.paused,
+    skipped: state.skipped,
+    tutorialDone: state.tutorialDone,
+  };
+}
+
+function entryScreen(
+  entry: ProductEntry,
+  foodTrialStep: FoodTrialStep,
+): Screen {
+  if (entry === "food") return "foodService";
+  if (entry === "food-trial") return foodTrialStep;
+  if (entry === "ai") return "aiGuide";
+  if (entry === "passport") return "passport";
+  return "today";
+}
+
 const tx = {
   en: {
     demo: "INTERACTIVE CONCEPT",
@@ -127,6 +227,8 @@ const tx = {
     back: "Back",
     mochi: "Mochi",
     today: "Today",
+    food: "Food",
+    ai: "PawSense",
     taste: "Taste",
     plan: "Plan",
     passport: "Passport",
@@ -139,6 +241,8 @@ const tx = {
     back: "ย้อนกลับ",
     mochi: "โมจิ",
     today: "วันนี้",
+    food: "อาหาร",
+    ai: "PawSense",
     taste: "รสนิยม",
     plan: "แผน",
     passport: "พาสปอร์ต",
@@ -146,32 +250,75 @@ const tx = {
   },
 };
 
-/* Local storage hydration intentionally synchronizes an external browser store after mount. */
+/* Local storage keeps care data while URL/entry context owns navigation. */
 /* eslint-disable react-hooks/set-state-in-effect */
-function usePersistedState() {
+function usePersistedState(entry: ProductEntry) {
   const [state, setState] = useState<AppState>(seed);
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
     try {
-      const freshDemo =
-        new URLSearchParams(window.location.search).get("demo") === "fresh";
-      if (freshDemo) {
-        localStorage.removeItem("pawproud-demo-v1");
-        setState(seed);
-        window.history.replaceState({}, "", "/app/");
-        setHydrated(true);
-        return;
+      const query = new URLSearchParams(window.location.search);
+      const resetTrial =
+        entry === "food-trial" && query.get("reset") === "1";
+      const current = localStorage.getItem(STORAGE_KEY);
+      const legacy = current
+        ? null
+        : localStorage.getItem(LEGACY_STORAGE_KEY);
+      const parsed = JSON.parse(current ?? legacy ?? "{}") as Partial<AppState>;
+      const migratedStep = isFoodTrialStep(parsed.foodTrialStep)
+        ? parsed.foodTrialStep
+        : isFoodTrialStep(parsed.screen)
+          ? parsed.screen
+          : "safety";
+      const saved: PersistedCareState = {
+        ...persistedCareState(seed),
+        ...parsed,
+        foodTrialStep: migratedStep,
+      };
+      const next: AppState = resetTrial
+        ? {
+            ...seed,
+            locale: saved.locale === "th" ? "th" : "en",
+            screen: "safety" as Screen,
+          }
+        : {
+            ...seed,
+            ...saved,
+            screen: entryScreen(entry, migratedStep),
+          };
+      if (resetTrial) {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(persistedCareState(next)),
+        );
       }
-      const saved = localStorage.getItem("pawproud-demo-v1");
-      if (saved) setState({ ...seed, ...JSON.parse(saved) });
+      setState(next);
+      if (legacy) localStorage.removeItem(LEGACY_STORAGE_KEY);
+      if (resetTrial) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("reset");
+        window.history.replaceState(
+          {},
+          "",
+          `${url.pathname}${url.search}${url.hash}`,
+        );
+      }
     } catch {
       /* demo still works without storage */
+      setState({ ...seed, screen: entryScreen(entry, "safety") });
     }
     setHydrated(true);
-  }, []);
+  }, [entry]);
   useEffect(() => {
-    if (hydrated)
-      localStorage.setItem("pawproud-demo-v1", JSON.stringify(state));
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(persistedCareState(state)),
+      );
+    } catch {
+      /* private browsing or blocked storage should not break the prototype */
+    }
   }, [state, hydrated]);
   return { state, setState, hydrated };
 }
@@ -305,8 +452,8 @@ function BottomNav({
 }) {
   const items: { key: Screen; label: string; icon: React.ReactNode }[] = [
     { key: "today", label: tx[l].today, icon: <Home size={20} /> },
-    { key: "tasteprint", label: tx[l].taste, icon: <Sparkles size={20} /> },
-    { key: "plan", label: tx[l].plan, icon: <CalendarDays size={20} /> },
+    { key: "foodService", label: tx[l].food, icon: <Utensils size={20} /> },
+    { key: "aiGuide", label: tx[l].ai, icon: <Sparkles size={20} /> },
     { key: "passport", label: tx[l].passport, icon: <ShieldCheck size={20} /> },
     { key: "more", label: tx[l].more, icon: <SlidersHorizontal size={20} /> },
   ];
@@ -475,13 +622,27 @@ function Welcome({
       </PageTitle>
       <div className="mt-5 grid grid-cols-3 gap-2 text-center text-[11px] font-bold text-[var(--muted)]">
         {[
-          l === "en" ? "2 tastes" : "2 รส",
-          l === "en" ? "3 minutes" : "3 นาที",
-          l === "en" ? "No commitment" : "ยังไม่ผูกมัด",
-        ].map((x, i) => (
-          <div key={x} className="rounded-2xl bg-[var(--soft)] px-2 py-3">
-            <span className="mb-1 block text-lg">{["🥣", "⏱️", "🫶"][i]}</span>
-            {x}
+          {
+            label: l === "en" ? "2 tastes" : "2 รส",
+            icon: <Utensils size={19} />,
+          },
+          {
+            label: l === "en" ? "3 minutes" : "3 นาที",
+            icon: <Clock3 size={19} />,
+          },
+          {
+            label: l === "en" ? "No commitment" : "ยังไม่ผูกมัด",
+            icon: <HeartPulse size={19} />,
+          },
+        ].map((item) => (
+          <div
+            key={item.label}
+            className="rounded-2xl bg-[var(--soft)] px-2 py-3"
+          >
+            <span className="mx-auto mb-1 grid h-7 w-7 place-items-center rounded-xl bg-white text-[var(--coral-dark)] shadow-sm">
+              {item.icon}
+            </span>
+            {item.label}
           </div>
         ))}
       </div>
@@ -617,34 +778,37 @@ function Safety({ l, go }: { l: Locale; go: (s: Screen) => void }) {
   return (
     <>
       <Eyebrow>
-        {l === "en" ? "Step 1 · Safety snapshot" : "ขั้นที่ 1 · เช็กความพร้อม"}
+        {l === "en" ? "Safety check" : "ตรวจความพร้อม"}
       </Eyebrow>
       <PageTitle
         sub={
           l === "en"
-            ? "A food preference trial only makes sense when today feels normal."
-            : "การทดลองรสชาติจะมีความหมายเมื่อวันนี้น้องมีอาการปกติ"
+            ? "Confirm Mochi’s condition before starting the trial."
+            : "ยืนยันอาการของโมจิก่อนเริ่มการทดลอง"
         }
       >
         {l === "en"
           ? "Is Mochi feeling like himself today?"
           : "วันนี้โมจิดูเป็นปกติไหม?"}
       </PageTitle>
-      <div className="my-6 rounded-[28px] border border-[var(--line)] bg-white p-5 shadow-soft">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[var(--mint)] text-[var(--success)]">
-            <HeartPulse />
-          </div>
-          <div>
-            <p className="font-black">
-              {l === "en" ? "Quick owner check" : "เช็กโดยเจ้าของ"}
-            </p>
-            <p className="text-xs text-[var(--muted)]">
-              {l === "en" ? "Owner-reported · today" : "เจ้าของรายงาน · วันนี้"}
-            </p>
-          </div>
+      <section className="relative my-8 pl-[70px]">
+        <motion.div
+          animate={{ rotate: [-4, 3, -4], y: [0, -3, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute left-0 top-0 grid h-14 w-14 place-items-center rounded-[42%_58%_50%_50%/58%_44%_56%_42%] bg-[var(--mint)] text-[var(--success)]"
+        >
+          <HeartPulse size={27} />
+        </motion.div>
+        <div className="pb-4">
+          <p className="font-black">
+            {l === "en" ? "Check today’s condition" : "ตรวจอาการวันนี้"}
+          </p>
+          <p className="text-xs text-[var(--muted)]">
+            {l === "en" ? "All three should be true" : "ทั้ง 3 ข้อควรเป็นจริง"}
+          </p>
         </div>
-        <ul className="space-y-3 text-sm text-[var(--muted)]">
+        <span className="absolute bottom-2 left-7 top-16 w-px bg-gradient-to-b from-[var(--success)]/45 to-transparent" />
+        <ul className="space-y-0 text-sm text-[var(--muted)]">
           {(l === "en"
             ? [
                 "Normal appetite and energy",
@@ -657,15 +821,18 @@ function Safety({ l, go }: { l: Locale; go: (s: Screen) => void }) {
                 "ไม่มียาใหม่หรือข้อกังวลเร่งด่วน",
               ]
           ).map((x) => (
-            <li key={x} className="flex gap-3">
-              <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[var(--mint)] text-[var(--success)]">
+            <li
+              key={x}
+              className="relative flex min-h-12 items-center gap-3 border-b border-[var(--line)]/70 py-3 last:border-0"
+            >
+              <span className="absolute -left-[50px] grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[var(--cream)] text-[var(--success)] ring-2 ring-[var(--mint)]">
                 <Check size={13} strokeWidth={3} />
               </span>
               {x}
             </li>
           ))}
         </ul>
-      </div>
+      </section>
       <div className="space-y-3">
         <AppButton onClick={() => go("trial")} icon={<ArrowRight size={18} />}>
           {l === "en" ? "Yes, Mochi is his usual self" : "ใช่ โมจิเป็นปกติ"}
@@ -692,12 +859,12 @@ function SafetyHold({ l, go }: { l: Locale; go: (s: Screen) => void }) {
         <Pause size={46} />
       </div>
       <h1 className="display mt-6 text-4xl font-black">
-        {l === "en" ? "Pause the trial." : "พักการทดลองก่อน"}
+        {l === "en" ? "Trial paused" : "พักการทดลอง"}
       </h1>
       <p className="mx-auto mt-3 max-w-sm leading-7 text-[var(--muted)]">
         {l === "en"
-          ? "Mochi’s wellbeing matters more than a preference signal. Keep his regular routine and contact a veterinarian if you are worried."
-          : "สุขภาพของโมจิสำคัญกว่าสัญญาณความชอบ รักษากิจวัตรเดิม และติดต่อสัตวแพทย์หากกังวล"}
+          ? "Keep Mochi’s regular routine. Contact a veterinarian if you are concerned."
+          : "ให้โมจิกินและใช้ชีวิตตามปกติ และติดต่อสัตวแพทย์หากกังวล"}
       </p>
       <div className="mt-8 space-y-3">
         <AppButton
@@ -716,13 +883,15 @@ function SafetyHold({ l, go }: { l: Locale; go: (s: Screen) => void }) {
 }
 
 function BowlChoice({
-  emoji,
+  icon,
+  tone,
   title,
   details,
   active,
   onClick,
 }: {
-  emoji: string;
+  icon: React.ReactNode;
+  tone: "honey" | "blue";
   title: string;
   details: string;
   active: boolean;
@@ -732,24 +901,35 @@ function BowlChoice({
     <motion.button
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
-      className={`relative min-h-[220px] overflow-hidden rounded-[28px] border-2 p-4 text-left transition ${active ? "border-[var(--coral-dark)] bg-[#fff4f5] shadow-[0_15px_35px_rgba(216,58,79,.14)]" : "border-[var(--line)] bg-white"}`}
+      aria-pressed={active}
+      className="relative min-h-[214px] px-2 py-3 text-center"
     >
+      <motion.span
+        aria-hidden="true"
+        animate={{
+          rotate: active ? -2 : 1,
+          scale: active ? 1 : 0.96,
+        }}
+        className={`absolute inset-x-1 bottom-2 top-2 rounded-[46%_54%_44%_56%/34%_40%_60%_66%] transition-colors ${active ? "bg-[#ffe5e8] ring-2 ring-[var(--coral-dark)]/70" : "bg-[var(--soft)]"}`}
+      />
       {active && (
-        <span className="absolute right-3 top-3 grid h-7 w-7 place-items-center rounded-full bg-[var(--coral-dark)] text-white">
+        <span className="absolute right-2 top-1 z-20 grid h-8 w-8 place-items-center rounded-full bg-[var(--coral-dark)] text-white shadow-md">
           <Check size={16} strokeWidth={3} />
         </span>
       )}
-      <div className="relative mx-auto mt-5 h-24 w-32">
+      <div className="relative z-10 mx-auto mt-4 h-24 w-32">
         <div className="absolute inset-x-0 bottom-0 h-14 rounded-[50%] border-[10px] border-[#f0d6c2] bg-[var(--chocolate)] shadow-[0_8px_0_#c99f82]" />
         <motion.span
           animate={active ? { y: [0, -10, 0], rotate: [0, -8, 5, 0] } : {}}
-          className="absolute inset-x-0 top-0 text-center text-5xl"
+          className={`absolute left-1/2 top-0 grid h-14 w-14 -translate-x-1/2 place-items-center rounded-full bg-white shadow-md ${tone === "honey" ? "text-[var(--honey)]" : "text-[var(--trust)]"}`}
         >
-          {emoji}
+          {icon}
         </motion.span>
       </div>
-      <p className="mt-4 font-black">{title}</p>
-      <p className="mt-1 text-xs leading-5 text-[var(--muted)]">{details}</p>
+      <p className="relative z-10 mt-4 font-black">{title}</p>
+      <p className="relative z-10 mx-auto mt-1 max-w-[130px] text-xs leading-5 text-[var(--muted)]">
+        {details}
+      </p>
     </motion.button>
   );
 }
@@ -768,20 +948,52 @@ function Trial({
   return (
     <>
       <Eyebrow>
-        {l === "en" ? "Step 2 · Guided Taste Trial" : "ขั้นที่ 2 · ทดลองรสชาติ"}
+        {l === "en" ? "Taste trial" : "ทดลองรสชาติ"}
       </Eyebrow>
       <PageTitle
         sub={
           l === "en"
-            ? "Place both bowls down together. Tap the one Mochi approaches first."
-            : "วางสองชามพร้อมกัน แล้วแตะชามที่โมจิเข้าหาก่อน"
+            ? "Place both samples down together. Select the first bowl Mochi approached."
+            : "วางตัวอย่างทั้งสองพร้อมกัน แล้วเลือกชามที่โมจิเข้าหาก่อน"
         }
       >
-        {l === "en" ? "One question. Two tastes." : "หนึ่งคำถาม สองรสชาติ"}
+        {l === "en" ? "Which bowl got the first sniff?" : "โมจิดมชามไหนก่อน?"}
       </PageTitle>
-      <div className="mt-6 grid grid-cols-2 gap-3">
+      <div className="relative mt-4 h-[192px]">
+        <motion.div
+          aria-hidden="true"
+          animate={{ rotate: [-2, 1, -2], scale: [1, 1.025, 1] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-x-5 bottom-3 top-5 rounded-[42%_58%_54%_46%/58%_42%_58%_42%] bg-[radial-gradient(circle_at_50%_25%,#fff_0,#fff0e6_70%)]"
+        />
+        <motion.div
+          className="absolute left-1/2 top-0 h-44 w-44 -translate-x-1/2"
+          animate={{
+            x: choice === "chicken" ? -32 : choice === "salmon" ? 32 : 0,
+            rotate: choice === "chicken" ? -4 : choice === "salmon" ? 4 : 0,
+            y: [0, -4, 0],
+          }}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <Image
+            src="/brand/pawproud-mascot-logo.webp"
+            alt={l === "en" ? "Mochi choosing between two tastes" : "โมจิกำลังเลือกระหว่างสองรส"}
+            fill
+            sizes="160px"
+            className="object-contain drop-shadow-[0_12px_18px_rgba(85,43,32,.16)]"
+          />
+        </motion.div>
+        <span className="absolute bottom-3 left-7 grid h-12 w-12 -rotate-6 place-items-center rounded-full bg-white text-[var(--honey)] shadow-md ring-4 ring-[#fff4e4]">
+          <Drumstick size={25} />
+        </span>
+        <span className="absolute bottom-3 right-7 grid h-12 w-12 rotate-6 place-items-center rounded-full bg-white text-[var(--trust)] shadow-md ring-4 ring-[#eaf6ff]">
+          <Fish size={25} />
+        </span>
+      </div>
+      <div className="relative mt-3 grid grid-cols-2 gap-2 before:absolute before:bottom-6 before:left-1/2 before:top-6 before:w-px before:bg-[var(--line)]">
         <BowlChoice
-          emoji="🍗"
+          icon={<Drumstick size={29} strokeWidth={2.4} />}
+          tone="honey"
           title={l === "en" ? "A · Chicken" : "A · ไก่"}
           details={
             l === "en"
@@ -792,7 +1004,8 @@ function Trial({
           onClick={() => setChoice("chicken")}
         />
         <BowlChoice
-          emoji="🐟"
+          icon={<Fish size={29} strokeWidth={2.4} />}
+          tone="blue"
           title={l === "en" ? "B · Salmon" : "B · แซลมอน"}
           details={
             l === "en"
@@ -805,22 +1018,24 @@ function Trial({
       </div>
       <button
         onClick={() => setChoice("unclear")}
-        className={`pressable mt-3 flex min-h-14 w-full items-center justify-between rounded-[18px] border-2 px-4 text-sm font-bold ${choice === "unclear" ? "border-[var(--trust)] bg-[var(--sky)]" : "border-[var(--line)] bg-white"}`}
+        aria-pressed={choice === "unclear"}
+        className={`pressable mx-auto mt-3 flex min-h-12 items-center justify-center gap-2 border-b-2 px-3 text-sm font-bold ${choice === "unclear" ? "border-[var(--trust)] text-[var(--trust)]" : "border-transparent text-[var(--muted)]"}`}
       >
+        <CircleOff size={17} />
         <span>
           {l === "en"
             ? "Mochi showed no clear first choice"
             : "โมจิยังไม่แสดงตัวเลือกที่ชัดเจน"}
         </span>
-        {choice === "unclear" && <Check size={18} />}
+        {choice === "unclear" && <Check size={17} />}
       </button>
       <div className="mt-6">
         <AppButton
           disabled={!choice}
-          onClick={() => go("observe")}
+          onClick={() => go("camera")}
           icon={<ArrowRight size={18} />}
         >
-          {l === "en" ? "Record this observation" : "บันทึกการสังเกตนี้"}
+          {l === "en" ? "Save first choice" : "บันทึกชามที่เลือกก่อน"}
         </AppButton>
       </div>
       <p className="mt-4 text-center text-xs text-[var(--muted)]">
@@ -829,37 +1044,6 @@ function Trial({
           : "หมายเหตุ: ปฏิกิริยาของโมจิเป็นการจำลอง วันนี้ไม่มีตัวอย่างอาหารจริง"}
       </p>
     </>
-  );
-}
-
-function Segment({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  options: { value: string; label: string; emoji?: string }[];
-  onChange: (x: string) => void;
-}) {
-  return (
-    <fieldset className="rounded-[24px] border border-[var(--line)] bg-white p-4">
-      <legend className="px-1 text-sm font-black">{label}</legend>
-      <div className="mt-2 grid grid-cols-3 gap-2">
-        {options.map((o) => (
-          <button
-            type="button"
-            key={o.value}
-            onClick={() => onChange(o.value)}
-            className={`pressable min-h-[70px] rounded-2xl px-2 text-xs font-bold ${value === o.value ? "bg-[var(--chocolate)] text-white" : "bg-[var(--soft)] text-[var(--muted)]"}`}
-          >
-            {o.emoji && <span className="mb-1 block text-xl">{o.emoji}</span>}
-            {o.label}
-          </button>
-        ))}
-      </div>
-    </fieldset>
   );
 }
 
@@ -874,90 +1058,265 @@ function Observe({
   patch: (x: Partial<AppState>) => void;
   submit: () => void;
 }) {
+  type ObservationKey = "approach" | "intake" | "energy";
+  const moments: Array<{
+    key: ObservationKey;
+    short: string;
+    question: string;
+    hint: string;
+    icon: React.ReactNode;
+    options: Array<{
+      value: string;
+      label: string;
+      note: string;
+      icon: React.ReactNode;
+    }>;
+  }> = [
+    {
+      key: "approach",
+      short: l === "en" ? "First sniff" : "การเข้าหาครั้งแรก",
+      question:
+        l === "en" ? "How did Mochi meet the bowl?" : "โมจิเข้าหาชามแบบไหน?",
+      hint:
+        l === "en"
+          ? "Think about the very first few seconds."
+          : "นึกถึงช่วงไม่กี่วินาทีแรก",
+      icon: <Eye size={18} />,
+      options: [
+        {
+          value: "quick",
+          label: l === "en" ? "Went right in" : "เข้าไปทันที",
+          note: l === "en" ? "No pause before sniffing" : "ไม่ลังเลก่อนดม",
+          icon: <Zap size={21} />,
+        },
+        {
+          value: "slow",
+          label: l === "en" ? "Took a sniff first" : "ดมดูก่อน",
+          note: l === "en" ? "Paused, then approached" : "หยุดดูก่อนแล้วจึงเข้าใกล้",
+          icon: <Eye size={21} />,
+        },
+        {
+          value: "none",
+          label: l === "en" ? "Stayed away" : "ไม่เข้าใกล้",
+          note: l === "en" ? "Did not approach the bowl" : "ไม่ได้เข้าหาชาม",
+          icon: <CircleOff size={21} />,
+        },
+      ],
+    },
+    {
+      key: "intake",
+      short: l === "en" ? "Bowl finish" : "ปริมาณที่กิน",
+      question: l === "en" ? "How much was left?" : "ในชามเหลือมากแค่ไหน?",
+      hint:
+        l === "en"
+          ? "A quick look at the bowl is enough."
+          : "แค่มองสิ่งที่เหลือในชามก็พอ",
+      icon: <Utensils size={18} />,
+      options: [
+        {
+          value: "most",
+          label: l === "en" ? "Bowl nearly clean" : "เกือบหมดชาม",
+          note: l === "en" ? "Mochi ate most of it" : "โมจิกินเกือบทั้งหมด",
+          icon: <Utensils size={21} />,
+        },
+        {
+          value: "some",
+          label: l === "en" ? "Tasted a little" : "ลองกินเล็กน้อย",
+          note: l === "en" ? "Some food remained" : "ยังมีอาหารเหลือ",
+          icon: <SlidersHorizontal size={21} />,
+        },
+        {
+          value: "none",
+          label: l === "en" ? "Left it alone" : "ไม่แตะอาหาร",
+          note: l === "en" ? "No visible eating" : "ไม่เห็นว่ากินอาหาร",
+          icon: <CircleOff size={21} />,
+        },
+      ],
+    },
+    {
+      key: "energy",
+      short: l === "en" ? "Body signal" : "ภาษากาย",
+      question:
+        l === "en" ? "What did Mochi’s body say?" : "ภาษากายของโมจิบอกอะไร?",
+      hint:
+        l === "en"
+          ? "Choose the closest match—there is no perfect answer."
+          : "เลือกข้อที่ใกล้เคียงที่สุด ไม่จำเป็นต้องเป๊ะ",
+      icon: <Dog size={18} />,
+      options: [
+        {
+          value: "bright",
+          label: l === "en" ? "Eager and bright" : "ตื่นเต้นและสนใจ",
+          note: l === "en" ? "Alert, loose, interested" : "ตื่นตัว ผ่อนคลาย และสนใจ",
+          icon: <Sparkles size={21} />,
+        },
+        {
+          value: "neutral",
+          label: l === "en" ? "Calm and steady" : "สงบเป็นปกติ",
+          note: l === "en" ? "Comfortable, not excited" : "สบายตัว ไม่ได้ตื่นเต้น",
+          icon: <Smile size={21} />,
+        },
+        {
+          value: "avoid",
+          label: l === "en" ? "Turned away" : "หันหน้าหนี",
+          note: l === "en" ? "Moved back or avoided it" : "ถอยหรือหลีกเลี่ยงชาม",
+          icon: <ArrowLeft size={21} />,
+        },
+      ],
+    },
+  ];
+  const firstOpen = moments.find((moment) => !state[moment.key])?.key ?? "energy";
+  const [activeMoment, setActiveMoment] = useState<ObservationKey>(firstOpen);
+  const activeIndex = moments.findIndex((moment) => moment.key === activeMoment);
+  const active = moments[activeIndex];
+  const observedCount = moments.filter((moment) => state[moment.key]).length;
   const ready = Boolean(state.approach && state.intake && state.energy);
+
+  const choose = (value: string) => {
+    patch({ [active.key]: value });
+    if (activeIndex < moments.length - 1) {
+      window.setTimeout(() => setActiveMoment(moments[activeIndex + 1].key), 180);
+    }
+  };
+
   return (
     <>
-      <Eyebrow>
-        {l === "en"
-          ? "Step 3 · What happened next?"
-          : "ขั้นที่ 3 · หลังจากนั้นเกิดอะไรขึ้น?"}
-      </Eyebrow>
+      <Eyebrow>{l === "en" ? "Observation" : "บันทึกพฤติกรรม"}</Eyebrow>
       <PageTitle
         sub={
           l === "en"
-            ? "Choose only what you could see. PawProud keeps observation separate from interpretation."
-            : "เลือกเฉพาะสิ่งที่คุณเห็น PawProud แยกข้อสังเกตออกจากการตีความ"
+            ? "Record three observable behaviors from this trial."
+            : "บันทึกพฤติกรรมที่สังเกตได้ 3 รายการจากการทดลองนี้"
         }
       >
-        {l === "en" ? "Tell us what Mochi did." : "เล่าสิ่งที่โมจิทำ"}
+        {l === "en" ? "What did Mochi do?" : "โมจิแสดงพฤติกรรมอย่างไร?"}
       </PageTitle>
-      <div className="mt-6 space-y-3">
-        <Segment
-          label={l === "en" ? "Approach" : "การเข้าหา"}
-          value={state.approach}
-          onChange={(approach) => patch({ approach })}
-          options={[
-            {
-              value: "quick",
-              label: l === "en" ? "Right away" : "ทันที",
-              emoji: "⚡",
-            },
-            {
-              value: "slow",
-              label: l === "en" ? "After a pause" : "ลังเลก่อน",
-              emoji: "👀",
-            },
-            {
-              value: "none",
-              label: l === "en" ? "Did not approach" : "ไม่เข้าหา",
-              emoji: "🛑",
-            },
-          ]}
+      <div className="relative mt-5 px-2 pt-2">
+        <motion.div
+          aria-hidden="true"
+          animate={{ rotate: [2, -1, 2], scale: [1, 1.03, 1] }}
+          transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-x-8 top-3 h-[138px] rounded-[58%_42%_48%_52%/43%_55%_45%_57%] bg-gradient-to-br from-[#fff0de] via-[#fff8f0] to-[#e9f7ff]"
         />
-        <Segment
-          label={l === "en" ? "How much did he eat?" : "กินมากแค่ไหน?"}
-          value={state.intake}
-          onChange={(intake) => patch({ intake })}
-          options={[
-            {
-              value: "most",
-              label: l === "en" ? "Most" : "เกือบหมด",
-              emoji: "🥣",
-            },
-            {
-              value: "some",
-              label: l === "en" ? "Some" : "บางส่วน",
-              emoji: "🥄",
-            },
-            {
-              value: "none",
-              label: l === "en" ? "None" : "ไม่กิน",
-              emoji: "〰️",
-            },
-          ]}
-        />
-        <Segment
-          label={l === "en" ? "Body language" : "ภาษากาย"}
-          value={state.energy}
-          onChange={(energy) => patch({ energy })}
-          options={[
-            {
-              value: "bright",
-              label: l === "en" ? "Bright" : "สนใจ",
-              emoji: "✨",
-            },
-            {
-              value: "neutral",
-              label: l === "en" ? "Neutral" : "ปกติ",
-              emoji: "🙂",
-            },
-            {
-              value: "avoid",
-              label: l === "en" ? "Avoided" : "หลบเลี่ยง",
-              emoji: "↩️",
-            },
-          ]}
-        />
+        <div className="absolute left-5 top-7 h-20 w-20 rounded-full bg-[var(--honey)]/20 blur-2xl" />
+        <div className="absolute right-2 top-0 h-24 w-24 rounded-full bg-[var(--coral)]/15 blur-2xl" />
+        <div className="relative flex h-[142px] items-end justify-center">
+          <motion.div
+            key={activeMoment}
+            initial={{ y: 8, scale: 0.96, opacity: 0 }}
+            animate={{ y: [0, -4, 0], scale: 1, opacity: 1 }}
+            transition={{
+              opacity: { duration: 0.25 },
+              scale: { duration: 0.25 },
+              y: { duration: 2.4, repeat: Infinity, ease: "easeInOut" },
+            }}
+            className="relative z-10 h-[138px] w-[190px]"
+          >
+            <Image
+              src="/brand/pawproud-mascot-logo.webp"
+              alt={l === "en" ? "Mochi watching the taste bowl" : "โมจิกำลังมองชามชิม"}
+              fill
+              sizes="190px"
+              className="object-contain drop-shadow-[0_12px_14px_rgba(86,44,28,.15)]"
+            />
+          </motion.div>
+          <motion.span
+            animate={{ rotate: [-4, 4, -4], y: [0, -3, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute bottom-3 right-7 grid h-12 w-12 place-items-center rounded-full bg-[var(--honey)] text-[var(--chocolate)] shadow-md ring-4 ring-white"
+            aria-hidden="true"
+          >
+            {state.choice === "chicken" ? <Drumstick size={23} /> : <Fish size={23} />}
+          </motion.span>
+        </div>
+        <div className="relative mt-2 grid grid-cols-3 before:absolute before:left-[16%] before:right-[16%] before:top-5 before:h-px before:bg-[var(--line)]">
+          {moments.map((moment, index) => {
+            const complete = Boolean(state[moment.key]);
+            const selected = activeMoment === moment.key;
+            return (
+              <button
+                type="button"
+                key={moment.key}
+                onClick={() => setActiveMoment(moment.key)}
+                aria-current={selected ? "step" : undefined}
+                aria-label={`${moment.short}${complete ? (l === "en" ? ", answered" : " ตอบแล้ว") : ""}`}
+                className={`pressable relative z-10 mx-1 flex min-h-[68px] flex-col items-center justify-start gap-1.5 px-1 text-[10px] font-black transition-colors ${selected ? "text-[var(--chocolate)]" : complete ? "text-[var(--success)]" : "text-[var(--muted)]"}`}
+              >
+                <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ring-4 ring-[var(--cream)] transition-colors ${selected ? "bg-[var(--chocolate)] text-white" : complete ? "bg-[var(--mint)] text-[var(--success)]" : "bg-white text-[var(--muted)]"}`}>
+                  {complete && !selected ? <Check size={16} /> : moment.icon}
+                </span>
+                <span className="hidden min-[390px]:inline">{moment.short}</span>
+                <span className="min-[390px]:hidden">{index + 1}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.fieldset
+          key={active.key}
+          initial={{ opacity: 0, x: 18 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -18 }}
+          transition={{ duration: 0.2 }}
+          className="mt-4 border-t-2 border-[var(--chocolate)]/15 pt-5"
+        >
+          <legend className="sr-only">{active.question}</legend>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[.13em] text-[var(--coral-dark)]">
+                {l === "en"
+                  ? `${observedCount} of 3 noticed`
+                  : `บันทึกแล้ว ${observedCount} จาก 3`}
+              </p>
+              <h2 className="display mt-1 text-[25px] font-black leading-tight">
+                {active.question}
+              </h2>
+              <p className="mt-1 text-xs leading-5 text-[var(--muted)]">{active.hint}</p>
+            </div>
+            <span className="grid h-11 w-11 shrink-0 -rotate-3 place-items-center rounded-[42%_58%_48%_52%] bg-[var(--soft)] text-[var(--coral-dark)]">
+              {active.icon}
+            </span>
+          </div>
+          <div className="mt-4 border-y border-[var(--line)]">
+            {active.options.map((option) => {
+              const selected = state[active.key] === option.value;
+              return (
+                <motion.button
+                  type="button"
+                  key={option.value}
+                  whileTap={{ scale: 0.985 }}
+                  onClick={() => choose(option.value)}
+                  aria-pressed={selected}
+                  className={`relative flex min-h-[78px] w-full items-center gap-3 border-b border-[var(--line)] px-1 py-3 text-left transition-colors last:border-b-0 ${selected ? "bg-gradient-to-r from-[#ffe8e9] via-[#fff8f4] to-transparent" : "bg-transparent hover:bg-white/50"}`}
+                >
+                  <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${selected ? "bg-[var(--coral-dark)] text-white" : "bg-[var(--soft)] text-[var(--chocolate)]"}`}>
+                    {option.icon}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <strong className="block text-sm">{option.label}</strong>
+                    <span className="mt-0.5 block text-[11px] leading-4 text-[var(--muted)]">
+                      {option.note}
+                    </span>
+                  </span>
+                  {selected && (
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[var(--coral-dark)] text-white">
+                      <Check size={16} />
+                    </span>
+                  )}
+                </motion.button>
+              );
+            })}
+          </div>
+        </motion.fieldset>
+      </AnimatePresence>
+
+      <div className="mt-4 flex items-center justify-center gap-2 text-xs font-bold text-[var(--muted)]">
+        <ShieldCheck size={15} className="text-[var(--success)]" />
+        {l === "en"
+          ? "PawSense analyzes only the observations you record."
+          : "PawSense วิเคราะห์เฉพาะสิ่งที่คุณบันทึก"}
       </div>
       <div className="mt-6">
         <AppButton
@@ -967,11 +1326,11 @@ function Observe({
         >
           {ready
             ? l === "en"
-              ? "Build Mochi’s feedback"
-              : "สร้างผลตอบรับของโมจิ"
+              ? "Analyze 3 observations"
+              : "วิเคราะห์ข้อสังเกต 3 รายการ"
             : l === "en"
-              ? "Complete all 3 observations"
-              : "บันทึกให้ครบทั้ง 3 ข้อ"}
+              ? `${3 - observedCount} moment${3 - observedCount === 1 ? "" : "s"} left to notice`
+              : `เหลืออีก ${3 - observedCount} ช่วงให้บันทึก`}
         </AppButton>
       </div>
     </>
@@ -1030,28 +1389,32 @@ function Feedback({
     : state.feedback || localizedSummary;
   return (
     <>
-      <Eyebrow>
-        {l === "en" ? "Step 4 · Feedback" : "ขั้นที่ 4 · ผลตอบรับ"}
-      </Eyebrow>
+      <Eyebrow>{l === "en" ? "Trial result" : "ผลการทดลอง"}</Eyebrow>
       <PageTitle
         sub={
           l === "en"
-            ? "The observation is saved first. AI only helps explain it."
-            : "ระบบบันทึกข้อสังเกตก่อน AI มีหน้าที่ช่วยอธิบายเท่านั้น"
+            ? "Based on 3 recorded observations"
+            : "อ้างอิงจากข้อสังเกตที่บันทึกไว้ 3 รายการ"
         }
       >
-        {l === "en" ? "Mochi left an early signal." : "โมจิส่งสัญญาณแรกแล้ว"}
+        {l === "en" ? "Taste signal" : "สัญญาณรสชาติ"}
       </PageTitle>
-      <div className="my-6 rounded-[30px] bg-[var(--chocolate)] p-5 text-white shadow-soft">
-        <div className="flex items-center justify-between">
+      <section className="relative my-8 px-5 py-7 text-white">
+        <motion.div
+          aria-hidden="true"
+          initial={{ rotate: -2, scale: 0.96 }}
+          animate={{ rotate: -0.5, scale: 1 }}
+          className="absolute inset-0 rounded-[44%_56%_48%_52%/15%_18%_14%_17%] bg-[var(--chocolate)] shadow-[0_18px_45px_rgba(85,43,32,.18)]"
+        />
+        <div className="relative flex items-center justify-between">
           <TinyBadge tone="coral">
-            {l === "en" ? "Owner-reported" : "เจ้าของรายงาน"}
+            {l === "en" ? "Recorded" : "บันทึกแล้ว"}
           </TinyBadge>
           <span className="text-xs text-white/60">
-            {l === "en" ? "Trial #1" : "การทดลอง #1"}
+            {l === "en" ? "Trial 1" : "การทดลองครั้งที่ 1"}
           </span>
         </div>
-        <p className="display mt-5 text-2xl font-black">
+        <p className="display relative mt-5 text-2xl font-black">
           {state.choice === "unclear"
             ? l === "en"
               ? "No clear choice—yet."
@@ -1060,28 +1423,28 @@ function Feedback({
               ? `Mochi approached ${chosen} first.`
               : `โมจิเข้าหา${chosen}ก่อน`}
         </p>
-        <div className="mt-5 grid grid-cols-3 gap-2 text-center text-[11px]">
-          <div className="rounded-2xl bg-white/10 p-3">
+        <div className="relative mt-5 grid grid-cols-3 divide-x divide-white/20 border-y border-white/15 py-3 text-center text-[11px]">
+          <div className="px-2 py-1">
             <Zap className="mx-auto mb-1" size={18} />
             {observation(state.approach)}
           </div>
-          <div className="rounded-2xl bg-white/10 p-3">
+          <div className="px-2 py-1">
             <Utensils className="mx-auto mb-1" size={18} />
             {observation(state.intake)}
           </div>
-          <div className="rounded-2xl bg-white/10 p-3">
+          <div className="px-2 py-1">
             <Dog className="mx-auto mb-1" size={18} />
             {observation(state.energy)}
           </div>
         </div>
-      </div>
-      <div className="rounded-[28px] border border-[var(--line)] bg-white p-5">
+      </section>
+      <section className="relative border-l-2 border-[var(--trust)]/25 pl-5">
+        <span className="absolute -left-[19px] top-0 grid h-9 w-9 place-items-center rounded-full bg-[var(--sky)] text-[var(--trust)] ring-4 ring-[var(--cream)]">
+          <Sparkles size={18} />
+        </span>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 font-black">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--sky)] text-[var(--trust)]">
-              <Sparkles size={18} />
-            </span>
-            {l === "en" ? "AI explanation" : "คำอธิบายจาก AI"}
+          <div className="flex items-center gap-2 pl-2 font-black">
+            {l === "en" ? "Analysis" : "ผลวิเคราะห์"}
           </div>
           {state.feedbackSource && (
             <TinyBadge
@@ -1093,26 +1456,65 @@ function Feedback({
             >
               {feedbackWasLocalized
                 ? l === "en"
-                  ? "Localized summary"
-                  : "สรุปตามภาษา"
+                  ? "Your language"
+                  : "ภาษาของคุณ"
                 : state.feedbackSource === "ai"
                   ? l === "en"
-                    ? "Live AI"
-                    : "AI สด"
+                    ? "Live PawSense"
+                    : "PawSense แบบสด"
                   : l === "en"
-                    ? "Safe fallback"
-                    : "คำอธิบายสำรอง"}
+                    ? "Safety summary"
+                    : "สรุปแบบปลอดภัย"}
             </TinyBadge>
           )}
         </div>
         {loading ? (
-          <div className="mt-5 space-y-3">
-            <div className="h-4 w-full animate-pulse rounded bg-[var(--soft)]" />
-            <div className="h-4 w-4/5 animate-pulse rounded bg-[var(--soft)]" />
-            <p className="text-xs text-[var(--muted)]">
+          <div
+            className="relative mt-5 overflow-hidden py-4"
+            role="status"
+            aria-live="polite"
+          >
+            <div className="relative mx-auto h-[120px] max-w-[270px]">
+              <div className="absolute inset-x-8 top-8 h-px bg-gradient-to-r from-[var(--honey)] via-[var(--trust)] to-[var(--coral)]" />
+              {[
+                { icon: <Eye size={16} />, x: "left-0", delay: 0 },
+                { icon: <Utensils size={16} />, x: "left-1/2 -translate-x-1/2", delay: 0.18 },
+                { icon: <Dog size={16} />, x: "right-0", delay: 0.36 },
+              ].map((signal, index) => (
+                <motion.span
+                  key={index}
+                  animate={{ y: [0, -5, 0], scale: [1, 1.06, 1] }}
+                  transition={{ duration: 1.4, repeat: Infinity, delay: signal.delay }}
+                  className={`absolute top-3 grid h-11 w-11 place-items-center rounded-full bg-white text-[var(--chocolate)] shadow-md ring-4 ring-[var(--soft)] ${signal.x}`}
+                >
+                  {signal.icon}
+                </motion.span>
+              ))}
+              <motion.span
+                animate={{ rotate: [0, 8, -8, 0], scale: [1, 1.08, 1] }}
+                transition={{ duration: 1.7, repeat: Infinity }}
+                className="absolute bottom-0 left-1/2 grid h-14 w-14 -translate-x-1/2 place-items-center rounded-[42%_58%_52%_48%] bg-[var(--chocolate)] text-white shadow-lg"
+              >
+                <Sparkles size={24} />
+              </motion.span>
+              {["left-[20%]", "right-[20%]"].map((position, index) => (
+                <motion.span
+                  key={position}
+                  animate={{ top: [48, 78], opacity: [0, 1, 0] }}
+                  transition={{ duration: 1.25, repeat: Infinity, delay: index * 0.35 }}
+                  className={`absolute ${position} top-12 h-2 w-2 rounded-full bg-[var(--coral)]`}
+                />
+              ))}
+            </div>
+            <p className="mt-3 text-center text-sm font-black text-[var(--ink)]">
               {l === "en"
-                ? "Turning the structured observation into plain language…"
-                : "กำลังอธิบายข้อสังเกตให้เข้าใจง่าย…"}
+                ? "PawSense is connecting Mochi’s signals…"
+                : "PawSense กำลังเชื่อมสัญญาณของโมจิ…"}
+            </p>
+            <p className="mt-1 text-center text-xs leading-5 text-[var(--muted)]">
+              {l === "en"
+                ? "First sniff, bowl finish, and body language—nothing else."
+                : "ใช้เฉพาะการเข้าหา ปริมาณที่กิน และภาษากายเท่านั้น"}
             </p>
           </div>
         ) : (
@@ -1122,17 +1524,25 @@ function Feedback({
             </p>
             <button
               onClick={retry}
-              className="mt-4 flex items-center gap-1.5 text-xs font-extrabold text-[var(--trust)]"
+              className="pressable mt-4 flex min-h-10 items-center gap-2 rounded-2xl bg-[var(--sky)] px-3 text-xs font-extrabold text-[var(--trust)]"
             >
               <RotateCcw size={14} />
-              {l === "en" ? "Retry explanation" : "ลองอธิบายอีกครั้ง"}
+              {l === "en" ? "Analyze again" : "วิเคราะห์อีกครั้ง"}
             </button>
+            <div className="mt-5 flex items-start gap-2 border-y border-[var(--success)]/20 py-3 text-xs leading-5 text-[var(--success)]">
+              <ShieldCheck className="mt-0.5 shrink-0" size={16} />
+              <span>
+                {l === "en"
+                  ? "This read uses only the three moments you recorded—not a diagnosis."
+                  : "ผลนี้ใช้เฉพาะสามช่วงที่คุณบันทึก และไม่ใช่การวินิจฉัย"}
+              </span>
+            </div>
           </>
         )}
-      </div>
-      <div className="mt-4 rounded-2xl border border-dashed border-[var(--line)] px-4 py-3 text-xs leading-5 text-[var(--muted)]">
+      </section>
+      <div className="mt-5 border-y border-dashed border-[var(--line)] py-3 text-xs leading-5 text-[var(--muted)]">
         <strong>
-          {l === "en" ? "What remains unknown:" : "สิ่งที่ยังไม่รู้:"}
+          {l === "en" ? "Limit:" : "ข้อจำกัด:"}
         </strong>{" "}
         {l === "en"
           ? "One trial cannot prove an ingredient preference, allergy, or nutritional fit."
@@ -1144,7 +1554,7 @@ function Feedback({
           onClick={() => go("tasteprint")}
           icon={<ArrowRight size={18} />}
         >
-          {l === "en" ? "Reveal TastePrint" : "เปิดดู TastePrint"}
+          {l === "en" ? "Open TastePrint" : "เปิด TastePrint"}
         </AppButton>
       </div>
     </>
@@ -1166,39 +1576,45 @@ function TastePrintScreen({
   return (
     <>
       <Eyebrow>
-        {l === "en" ? "Step 5 · TastePrint" : "ขั้นที่ 5 · TastePrint"}
+        {l === "en" ? "Preference profile" : "โปรไฟล์ความชอบ"}
       </Eyebrow>
       <PageTitle
         sub={
           l === "en"
-            ? "It grows only when an observation supports it. Unknowns stay visible."
-            : "TastePrint จะเติบโตเมื่อมีข้อสังเกตรองรับ และยังแสดงสิ่งที่ไม่รู้"
+            ? "1 trial recorded · unknown traits remain unfilled"
+            : "บันทึกแล้ว 1 การทดลอง · คุณลักษณะที่ยังไม่ทราบจะแสดงเป็นช่องว่าง"
         }
       >
-        {l === "en"
-          ? "A profile that shows uncertainty."
-          : "โปรไฟล์ที่ไม่ซ่อนความไม่แน่นอน"}
+        {l === "en" ? "TastePrint" : "TastePrint"}
       </PageTitle>
-      <div className="mt-6 rounded-[32px] border border-[var(--line)] bg-white p-5 shadow-soft">
-        <TastePrint
-          locale={l}
-          evidence={unclear ? 0 : evidence}
-          signal={!unclear}
-          label={
-            unclear
-              ? l === "en"
-                ? "Still uncertain"
-                : "ยังไม่แน่นอน"
-              : l === "en"
-                ? "Early signal"
-                : "สัญญาณเบื้องต้น"
-          }
+      <div className="relative mt-6 py-3">
+        <motion.div
+          aria-hidden="true"
+          animate={{ rotate: [-2, 2, -2], scale: [0.98, 1.02, 0.98] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-x-8 top-0 h-[290px] rounded-[48%_52%_58%_42%/52%_44%_56%_48%] bg-[radial-gradient(circle_at_42%_36%,#fff_0,#fff2e8_62%,#ffe4dd_100%)]"
         />
-        <div className="mt-5 rounded-2xl bg-[var(--soft)] p-4">
+        <div className="relative">
+          <TastePrint
+            locale={l}
+            evidence={unclear ? 0 : evidence}
+            signal={!unclear}
+            label={
+              unclear
+                ? l === "en"
+                  ? "Still uncertain"
+                  : "ยังไม่แน่นอน"
+                : l === "en"
+                  ? "Early signal"
+                  : "สัญญาณเบื้องต้น"
+            }
+          />
+        </div>
+        <div className="relative mt-7 border-l-4 border-[var(--honey)] py-1 pl-4">
           <p className="text-sm font-black">
             {l === "en"
-              ? "What changed after this trial"
-              : "สิ่งที่เปลี่ยนหลังการทดลองนี้"}
+              ? "Profile update"
+              : "ข้อมูลที่อัปเดต"}
           </p>
           <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
             {unclear
@@ -1211,7 +1627,7 @@ function TastePrintScreen({
           </p>
         </div>
       </div>
-      <div className="mt-5 flex items-center justify-center gap-5 text-xs text-[var(--muted)]">
+      <div className="mt-4 flex items-center justify-center gap-5 border-t border-[var(--line)] pt-4 text-xs text-[var(--muted)]">
         {!unclear && (
           <span className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-[var(--coral)]" />
@@ -1230,11 +1646,11 @@ function TastePrintScreen({
         >
           {unclear
             ? l === "en"
-              ? "Repeat the Taste Trial"
-              : "ทดลอง Taste Trial อีกครั้ง"
+              ? "Repeat taste trial"
+              : "ทดลองรสชาติอีกครั้ง"
             : l === "en"
-              ? "See Mochi’s First Bowl"
-              : "ดู First Bowl ของโมจิ"}
+              ? "Continue to First Bowl"
+              : "ไปที่ First Bowl"}
         </AppButton>
       </div>
     </>
@@ -1251,28 +1667,36 @@ function FirstBowl({
   choice: Choice;
 }) {
   const chicken = choice === "chicken";
-  const bowl = chicken ? "Chicken Comfort Bowl" : "Salmon Signal Bowl";
+  const bowl = chicken ? "Chicken First Bowl" : "Salmon First Bowl";
   const bowlName =
-    l === "en" ? bowl : chicken ? "ชามไก่ Comfort" : "ชามแซลมอน Signal";
+    l === "en" ? bowl : chicken ? "First Bowl รสไก่" : "First Bowl รสแซลมอน";
   return (
     <>
       <Eyebrow>
         {l === "en"
-          ? "Step 6 · One paid proof"
-          : "ขั้นที่ 6 · การพิสูจน์แบบซื้อครั้งเดียว"}
+          ? "One-time trial order"
+          : "คำสั่งซื้อทดลองครั้งเดียว"}
       </Eyebrow>
       <PageTitle
         sub={
           l === "en"
-            ? "A small one-time order based on the early signal. No subscription attached."
-            : "คำสั่งซื้อขนาดเล็กครั้งเดียวจากสัญญาณแรก โดยยังไม่ผูก Subscription"
+            ? "3 portions · one-time purchase · no subscription"
+            : "3 มื้อ · ซื้อครั้งเดียว · ไม่มี Subscription"
         }
       >
-        {l === "en" ? "Meet Mochi’s First Bowl." : "นี่คือ First Bowl ของโมจิ"}
+        {l === "en" ? "First Bowl" : "First Bowl"}
       </PageTitle>
-      <div className="mt-5 overflow-hidden rounded-[32px] border border-[var(--line)] bg-white p-3 shadow-soft">
-        <TasteBowlCanvas locale={l} />
-        <div className="p-3">
+      <div className="relative mt-6">
+        <motion.div
+          initial={{ rotate: -2, y: 8, opacity: 0 }}
+          animate={{ rotate: -1, y: 0, opacity: 1 }}
+          className="relative -mx-1 drop-shadow-[0_20px_30px_rgba(85,43,32,.14)]"
+        >
+          <TasteBowlCanvas locale={l} />
+        </motion.div>
+        <span className="absolute -left-1 top-6 h-7 w-20 -rotate-12 bg-[#ffe5aa]/80 backdrop-blur-sm" aria-hidden="true" />
+        <span className="absolute -right-1 top-6 h-7 w-20 rotate-12 bg-[#ffd7dc]/80 backdrop-blur-sm" aria-hidden="true" />
+        <div className="relative mt-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <TinyBadge tone="coral">
@@ -1287,21 +1711,27 @@ function FirstBowl({
             </div>
             <p className="text-right text-xl font-black">฿149</p>
           </div>
-          <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs font-bold">
-            <div className="rounded-2xl bg-[var(--soft)] p-3">
-              {chicken ? "🍗" : "🐟"}
+          <div className="mt-5 grid grid-cols-3 divide-x divide-[var(--line)] border-y border-[var(--line)] py-3 text-center text-xs font-bold">
+            <div className="px-2 py-1">
+              <span className="mx-auto grid h-8 w-8 place-items-center rounded-full bg-[#ffe7e9] text-[var(--coral-dark)]">
+                {chicken ? <Drumstick size={18} /> : <Fish size={18} />}
+              </span>
               <span className="mt-1 block">
                 {l === "en" ? "Aroma lead" : "นำด้วยกลิ่น"}
               </span>
             </div>
-            <div className="rounded-2xl bg-[var(--soft)] p-3">
-              🥄
+            <div className="px-2 py-1">
+              <span className="mx-auto grid h-8 w-8 place-items-center rounded-full bg-[var(--sky)] text-[var(--trust)]">
+                <Utensils size={18} />
+              </span>
               <span className="mt-1 block">
                 {l === "en" ? "Soft texture" : "เนื้อนุ่ม"}
               </span>
             </div>
-            <div className="rounded-2xl bg-[var(--soft)] p-3">
-              3×
+            <div className="px-2 py-1">
+              <span className="mx-auto grid h-8 w-8 place-items-center rounded-full bg-[var(--mint)] text-[var(--success)]">
+                <CalendarDays size={18} />
+              </span>
               <span className="mt-1 block">
                 {l === "en" ? "Check-ins" : "เช็กผล"}
               </span>
@@ -1319,11 +1749,13 @@ function FirstBowl({
             : "ซื้อ First Bowl ครั้งเดียว · ฿149"}
         </AppButton>
       </div>
-      <p className="mt-3 text-center text-xs font-bold text-[var(--success)]">
-        ✓{" "}
-        {l === "en"
-          ? "No recurring charge. Subscription comes only after acceptance."
-          : "ไม่มีค่าบริการต่อเนื่อง Subscription จะมาหลังยืนยันการยอมรับเท่านั้น"}
+      <p className="mt-3 flex items-start justify-center gap-1.5 text-center text-xs font-bold text-[var(--success)]">
+        <Check className="mt-px shrink-0" size={15} />
+        <span>
+          {l === "en"
+            ? "No recurring charge. Subscription is not enabled."
+            : "ไม่มีค่าบริการต่อเนื่อง และยังไม่เปิด Subscription"}
+        </span>
       </p>
     </>
   );
@@ -1341,29 +1773,30 @@ function Checkout({
   const bowl =
     choice === "chicken"
       ? l === "en"
-        ? "Chicken Comfort Bowl"
-        : "ชามไก่ Comfort"
+        ? "Chicken First Bowl"
+        : "First Bowl รสไก่"
       : l === "en"
-        ? "Salmon Signal Bowl"
-        : "ชามแซลมอน Signal";
+        ? "Salmon First Bowl"
+        : "First Bowl รสแซลมอน";
   return (
     <>
       <div className="flex items-center justify-between">
         <TinyBadge tone="warning">
-          {l === "en" ? "SIMULATED CHECKOUT" : "หน้าชำระเงินจำลอง"}
+          {l === "en" ? "DEMO ORDER" : "คำสั่งซื้อจำลอง"}
         </TinyBadge>
         <span className="text-xs font-bold text-[var(--muted)]">
           {l === "en" ? "No charge" : "ไม่เรียกเก็บเงินจริง"}
         </span>
       </div>
       <h1 className="display mt-4 text-4xl font-black">
-        {l === "en" ? "One bowl. No strings." : "หนึ่งชาม ไม่ผูกมัด"}
+        {l === "en" ? "Review order" : "ตรวจสอบคำสั่งซื้อ"}
       </h1>
-      <div className="mt-6 space-y-3">
-        <div className="rounded-[24px] border border-[var(--line)] bg-white p-4">
+      <div className="mt-7">
+        <div className="relative border-y-2 border-[var(--chocolate)]/15 py-5">
+          <span className="absolute -left-2 top-1/2 h-12 w-12 -translate-y-1/2 rounded-[45%_55%_50%_50%] bg-[#ffe7e9]" aria-hidden="true" />
           <div className="flex items-center gap-3">
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[var(--soft)] text-2xl">
-              🥣
+            <div className="relative grid h-14 w-14 place-items-center rounded-full text-[var(--coral-dark)]">
+              <Utensils size={25} />
             </div>
             <div className="flex-1">
               <p className="font-black">{bowl}</p>
@@ -1376,6 +1809,7 @@ function Checkout({
             <p className="font-black">฿149</p>
           </div>
         </div>
+        <div className="mt-3">
         {[
           {
             icon: <MapPin />,
@@ -1396,9 +1830,9 @@ function Checkout({
         ].map((x) => (
           <button
             key={x.title}
-            className="pressable flex min-h-[74px] w-full items-center gap-3 rounded-[22px] border border-[var(--line)] bg-white p-4 text-left"
+            className="pressable flex min-h-[74px] w-full items-center gap-3 border-b border-[var(--line)] px-1 py-4 text-left last:border-b-0"
           >
-            <span className="text-[var(--coral-dark)]">{x.icon}</span>
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--soft)] text-[var(--coral-dark)]">{x.icon}</span>
             <span className="flex-1">
               <span className="block text-sm font-black">{x.title}</span>
               <span className="mt-0.5 block text-xs text-[var(--muted)]">
@@ -1408,16 +1842,17 @@ function Checkout({
             <ChevronRight size={18} />
           </button>
         ))}
+        </div>
       </div>
-      <div className="mt-6 rounded-2xl bg-[var(--mint)] p-4 text-sm text-[var(--success)]">
-        <strong>{l === "en" ? "Trust check:" : "เช็กความไว้วางใจ:"}</strong>{" "}
+      <div className="mt-6 border-l-4 border-[var(--success)] bg-gradient-to-r from-[var(--mint)] to-transparent py-3 pl-4 text-sm text-[var(--success)]">
+        <strong>{l === "en" ? "Subscription:" : "Subscription:"}</strong>{" "}
         {l === "en"
-          ? "Subscription is off. This prototype will not charge or ship anything."
-          : "Subscription ปิดอยู่ ต้นแบบนี้จะไม่เรียกเก็บเงินหรือจัดส่งจริง"}
+          ? "Off · this demo will not charge or ship anything."
+          : "ปิด · เดโมนี้จะไม่เรียกเก็บเงินหรือจัดส่งจริง"}
       </div>
       <div className="mt-5">
         <AppButton onClick={() => go("receipt")} icon={<Check size={18} />}>
-          {l === "en" ? "Place simulated order" : "ยืนยันคำสั่งซื้อจำลอง"}
+          {l === "en" ? "Confirm demo order" : "ยืนยันคำสั่งซื้อจำลอง"}
         </AppButton>
       </div>
     </>
@@ -1439,12 +1874,12 @@ function Receipt({ l, confirm }: { l: Locale; confirm: () => void }) {
         </span>
       </motion.div>
       <h1 className="display mt-6 text-4xl font-black">
-        {l === "en" ? "First Bowl is on its way." : "First Bowl กำลังมา"}
+        {l === "en" ? "Order confirmed" : "ยืนยันคำสั่งซื้อแล้ว"}
       </h1>
       <p className="mx-auto mt-3 max-w-sm leading-7 text-[var(--muted)]">
         {l === "en"
-          ? "In the service, we would ask how the meal went before ever offering a subscription."
-          : "ในบริการจริง เราจะถามว่ามื้อนี้เป็นอย่างไรก่อนเสนอ Subscription"}
+          ? "Demo delivery scheduled. A meal check-in will appear in 3 days."
+          : "กำหนดส่งแบบจำลองแล้ว แบบเช็กมื้ออาหารจะแสดงในอีก 3 วัน"}
       </p>
       <div className="my-7 rounded-[26px] border border-[var(--line)] bg-white p-5 text-left">
         <div className="flex justify-between text-sm">
@@ -1461,7 +1896,7 @@ function Receipt({ l, confirm }: { l: Locale; confirm: () => void }) {
         </div>
       </div>
       <AppButton onClick={confirm} icon={<SkipForward size={18} />}>
-        {l === "en" ? "Jump ahead 3 days" : "ข้ามไปอีก 3 วัน"}
+        {l === "en" ? "Preview 3-day check-in" : "ดูแบบเช็กผลในอีก 3 วัน"}
       </AppButton>
     </div>
   );
@@ -1485,19 +1920,19 @@ function Checkin({
   const opts = [
     {
       v: "finished",
-      e: "✨",
+      icon: <Sparkles size={23} />,
       t: l === "en" ? "Finished it" : "กินหมด",
       s: l === "en" ? "Bowl looked clean" : "ชามเกือบสะอาด",
     },
     {
       v: "some",
-      e: "🥄",
+      icon: <Utensils size={23} />,
       t: l === "en" ? "Some left" : "เหลือบางส่วน",
       s: l === "en" ? "Accepted, not finished" : "ยอมกินแต่ไม่หมด",
     },
     {
       v: "skipped",
-      e: "〰️",
+      icon: <CircleOff size={23} />,
       t: l === "en" ? "Skipped it" : "ไม่กิน",
       s: l === "en" ? "Little or no intake" : "กินน้อยหรือไม่กิน",
     },
@@ -1506,28 +1941,37 @@ function Checkin({
     <>
       <Eyebrow>
         {l === "en"
-          ? "3 days later · Meal check-in"
-          : "3 วันต่อมา · เช็กมื้ออาหาร"}
+          ? "Meal check-in · Day 3"
+          : "เช็กมื้ออาหาร · วันที่ 3"}
       </Eyebrow>
       <PageTitle
         sub={
           l === "en"
-            ? "This is the proof we need before asking for a repeat."
-            : "นี่คือหลักฐานที่เราต้องมีก่อนชวนให้สั่งซ้ำ"
+            ? "Record the meal result before a repeat order or subscription."
+            : "บันทึกผลมื้ออาหารก่อนสั่งซ้ำหรือเริ่ม Subscription"
         }
       >
         {l === "en"
           ? "How did the First Bowl go?"
           : "First Bowl เป็นอย่างไรบ้าง?"}
       </PageTitle>
-      <div className="mt-6 space-y-3">
+      <div className="mt-6 border-y border-[var(--line)]">
         {opts.map((o) => (
           <button
             key={o.v}
             onClick={() => setValue(o.v)}
-            className={`pressable flex min-h-[86px] w-full items-center gap-4 rounded-[24px] border-2 p-4 text-left ${value === o.v ? "border-[var(--coral-dark)] bg-[#fff4f5]" : "border-[var(--line)] bg-white"}`}
+            aria-pressed={value === o.v}
+            className={`pressable relative flex min-h-[88px] w-full items-center gap-4 border-b border-[var(--line)] px-1 py-4 text-left last:border-b-0 ${value === o.v ? "bg-gradient-to-r from-[#ffe8e9] via-[#fff7f2] to-transparent" : "bg-transparent"}`}
           >
-            <span className="text-3xl">{o.e}</span>
+            {value === o.v && (
+              <motion.span
+                layoutId="checkin-mark"
+                className="absolute bottom-2 left-0 top-2 w-1 rounded-full bg-[var(--coral-dark)]"
+              />
+            )}
+            <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${value === o.v ? "bg-[var(--coral-dark)] text-white" : "bg-[var(--soft)] text-[var(--chocolate)]"}`}>
+              {o.icon}
+            </span>
             <span className="flex-1">
               <strong className="block">{o.t}</strong>
               <span className="text-xs text-[var(--muted)]">{o.s}</span>
@@ -1540,26 +1984,26 @@ function Checkin({
           </button>
         ))}
       </div>
-      <div className="mt-4 rounded-[22px] border border-[var(--line)] bg-white p-4">
+      <div className="mt-6 border-l-2 border-[var(--warning)]/30 pl-4">
         <p className="text-sm font-black">
           {l === "en" ? "Any warning signs?" : "มีอาการผิดปกติไหม?"}
         </p>
         <div className="mt-3 flex gap-2">
           <button
             onClick={() => setWarning(false)}
-            className={`rounded-full px-4 py-2 text-xs font-black ${!warning ? "bg-[var(--mint)] text-[var(--success)]" : "bg-[var(--soft)] text-[var(--muted)]"}`}
+            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-black ${!warning ? "bg-[var(--mint)] text-[var(--success)]" : "bg-[var(--soft)] text-[var(--muted)]"}`}
           >
-            ✓ {l === "en" ? "None reported" : "ไม่พบอาการ"}
+            <Check size={14} /> {l === "en" ? "None reported" : "ไม่พบอาการ"}
           </button>
           <button
             onClick={() => setWarning(true)}
-            className={`rounded-full px-4 py-2 text-xs font-bold ${warning ? "bg-[#ffe3e7] text-[var(--danger)]" : "bg-[var(--soft)] text-[var(--muted)]"}`}
+            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold ${warning ? "bg-[#ffe3e7] text-[var(--danger)]" : "bg-[var(--soft)] text-[var(--muted)]"}`}
           >
-            + {l === "en" ? "Report a sign" : "รายงานอาการ"}
+            <HeartPulse size={14} /> {l === "en" ? "Report a sign" : "รายงานอาการ"}
           </button>
         </div>
         {warning && (
-          <p className="mt-3 rounded-xl bg-[#fff1ce] p-3 text-xs leading-5 text-[var(--warning)]">
+            <p className="mt-3 border-y border-[var(--warning)]/20 bg-gradient-to-r from-[#fff1ce] to-transparent py-3 text-xs leading-5 text-[var(--warning)]">
             {l === "en"
               ? "PawProud will stop the repeat flow and show safety guidance."
               : "PawProud จะหยุดการสั่งซ้ำและแสดงคำแนะนำความปลอดภัย"}
@@ -1597,26 +2041,16 @@ function Subscription({
   return (
     <>
       <TinyBadge tone="success">
-        {l === "en" ? "ACCEPTANCE CONFIRMED" : "ยืนยันการยอมรับแล้ว"}
+        {l === "en" ? "CHECK-IN COMPLETE" : "บันทึกผลแล้ว"}
       </TinyBadge>
       <PageTitle
         sub={
           l === "en"
-            ? "Mochi accepted the First Bowl. Now recurring delivery can be a convenience—not a gamble."
-            : "โมจิยอมรับ First Bowl แล้ว ตอนนี้การจัดส่งซ้ำจึงเป็นความสะดวก ไม่ใช่การเดา"
+            ? "Mochi accepted the First Bowl. Choose one-time orders or an optional delivery plan."
+            : "โมจิยอมรับ First Bowl แล้ว เลือกซื้อครั้งเดียวหรือแผนจัดส่งแบบเลือกได้"
         }
       >
-        {l === "en" ? (
-          <>
-            The subscription has to{" "}
-            <span className="text-[var(--coral-dark)]">earn its place.</span>
-          </>
-        ) : (
-          <>
-            Subscription ต้อง
-            <span className="text-[var(--coral-dark)]">ได้รับความไว้วางใจ</span>
-          </>
-        )}
+        {l === "en" ? "Delivery options" : "ตัวเลือกการจัดส่ง"}
       </PageTitle>
       <div className="mt-6 rounded-[30px] border-2 border-[var(--coral-dark)] bg-white p-5 shadow-soft">
         <div className="flex items-start justify-between">
@@ -1625,7 +2059,7 @@ function Subscription({
               {l === "en" ? "OPTIONAL" : "ทางเลือก"}
             </TinyBadge>
             <h2 className="display mt-2 text-2xl font-black">
-              {l === "en" ? "Signature Bowl Plan" : "แผน Signature Bowl"}
+              {l === "en" ? "Recurring delivery" : "จัดส่งแบบต่อเนื่อง"}
             </h2>
           </div>
           <span className="font-black">
@@ -1645,17 +2079,20 @@ function Subscription({
           </button>
         </div>
         <ul className="mt-5 space-y-2 text-sm text-[var(--muted)]">
-          <li>✓ {l === "en" ? "Skip any delivery" : "ข้ามการจัดส่งได้"}</li>
-          <li>
-            ✓{" "}
-            {l === "en" ? "Pause or cancel visibly" : "พักหรือยกเลิกได้ชัดเจน"}
-          </li>
-          <li>
-            ✓{" "}
-            {l === "en"
+          {[
+            l === "en" ? "Skip any delivery" : "ข้ามการจัดส่งได้",
+            l === "en" ? "Pause or cancel visibly" : "พักหรือยกเลิกได้ชัดเจน",
+            l === "en"
               ? "TastePrint follows every check-in"
-              : "TastePrint อัปเดตทุกครั้ง"}
-          </li>
+              : "TastePrint อัปเดตทุกครั้ง",
+          ].map((benefit) => (
+            <li key={benefit} className="flex items-center gap-2">
+              <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[var(--mint)] text-[var(--success)]">
+                <Check size={12} />
+              </span>
+              {benefit}
+            </li>
+          ))}
         </ul>
       </div>
       <div className="mt-5 space-y-3">
@@ -1687,15 +2124,245 @@ function Subscription({
   );
 }
 
-function Today({
+function FoodServiceEntry({
   l,
   state,
   go,
+  openTrial,
+  restartTrial,
+  openAi,
+  legacy = false,
 }: {
   l: Locale;
   state: AppState;
   go: (s: Screen) => void;
+  openTrial: () => void;
+  restartTrial: () => void;
+  openAi: () => void;
+  legacy?: boolean;
 }) {
+  const hasObservation = Boolean(
+    state.choice && state.approach && state.intake && state.energy,
+  );
+  const status = state.feedback
+    ? "ready"
+    : state.foodTrialStep !== "safety" || state.choice || state.approach
+      ? "in-progress"
+      : "new";
+  const progressByStep: Record<FoodTrialStep, number> = {
+    safety: 8,
+    safetyHold: 8,
+    trial: 24,
+    camera: 33,
+    observe: 44,
+    feedback: 58,
+    tasteprint: 70,
+    firstBowl: 78,
+    checkout: 84,
+    receipt: 90,
+    checkin: 95,
+    subscription: 100,
+  };
+  if (!legacy) {
+    return (
+      <FoodServiceDetail
+        locale={l}
+        status={status}
+        progress={status === "new" ? 0 : progressByStep[state.foodTrialStep]}
+        onStart={restartTrial}
+        onContinue={openTrial}
+        onOpenResult={() => go(hasObservation ? "tasteprint" : "feedback")}
+        onOpenAi={openAi}
+      />
+    );
+  }
+  return (
+    <>
+      <Eyebrow>{l === "en" ? "Food service" : "บริการอาหาร"}</Eyebrow>
+      <PageTitle
+        sub={
+          l === "en"
+            ? "A guided taste trial turns observable reactions into a safer first-bowl decision."
+            : "การทดลองรสชาติแบบมีขั้นตอน เปลี่ยนปฏิกิริยาที่สังเกตได้ให้เป็นการตัดสินใจเลือกชามแรกอย่างรอบคอบ"
+        }
+      >
+        {l === "en" ? "Taste first. Commit later." : "ลองรสก่อน แล้วค่อยตัดสินใจ"}
+      </PageTitle>
+      <div className="mt-6 grid gap-3">
+        {[
+          {
+            icon: <Utensils size={22} />,
+            en: "Compare two tastes",
+            th: "เปรียบเทียบอาหารสองรส",
+          },
+          {
+            icon: <Dog size={22} />,
+            en: "Record what your dog actually does",
+            th: "บันทึกสิ่งที่น้องทำจริง",
+          },
+          {
+            icon: <Sparkles size={22} />,
+            en: "Receive an AI-assisted observation summary",
+            th: "รับสรุปข้อสังเกตที่มี AI ช่วยวิเคราะห์",
+          },
+        ].map((item) => (
+          <div
+            key={item.en}
+            className="flex items-center gap-4 rounded-[22px] border border-[var(--line)] bg-white p-4"
+          >
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[var(--soft)] text-[var(--coral-dark)]">
+              {item.icon}
+            </span>
+            <p className="text-sm font-black">{l === "en" ? item.en : item.th}</p>
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 space-y-3">
+        <Link
+          href="/app/food/trial/"
+          className="pressable flex min-h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-[var(--coral-dark)] px-5 py-3 text-[15px] font-extrabold text-white shadow-[0_10px_26px_rgba(216,58,79,.25)]"
+        >
+          {l === "en" ? "Start or resume the taste trial" : "เริ่มหรือทำ Taste Trial ต่อ"}
+          <ArrowRight size={18} />
+        </Link>
+        <Link
+          href="/app/"
+          className="pressable flex min-h-14 w-full items-center justify-center rounded-[18px] border-2 border-[var(--chocolate)] bg-white px-5 py-3 text-[15px] font-extrabold text-[var(--chocolate)]"
+        >
+          {l === "en" ? "Back to PawProud home" : "กลับหน้าหลัก PawProud"}
+        </Link>
+      </div>
+    </>
+  );
+}
+
+function AiGuideEntry({
+  l,
+  feedback,
+  source,
+  loading,
+  hasRecordedSignal,
+  run,
+  startTrial,
+  legacy = false,
+}: {
+  l: Locale;
+  feedback: string;
+  source: "ai" | "fallback" | "";
+  loading: boolean;
+  hasRecordedSignal: boolean;
+  run: () => void;
+  startTrial: () => void;
+  legacy?: boolean;
+}) {
+  if (!legacy) {
+    return (
+      <TasteInterpreter
+        locale={l}
+        feedback={feedback}
+        source={source}
+        loading={loading}
+        hasRecordedSignal={hasRecordedSignal}
+        onRun={run}
+        onStartTrial={startTrial}
+      />
+    );
+  }
+  return (
+    <>
+      <Eyebrow>{l === "en" ? "PawProud AI" : "PawProud AI"}</Eyebrow>
+      <PageTitle
+        sub={
+          l === "en"
+            ? "The AI works after you record a real observation. It summarizes the signal, exposes uncertainty, and suggests a cautious next step."
+            : "AI ทำงานหลังจากคุณบันทึกพฤติกรรมจริง โดยสรุปสัญญาณ แสดงสิ่งที่ยังไม่แน่นอน และแนะนำขั้นตอนถัดไปอย่างรอบคอบ"
+        }
+      >
+        {l === "en" ? "Evidence in. Guidance out." : "ใส่หลักฐาน แล้วรับคำแนะนำ"}
+      </PageTitle>
+      <div className="mt-6 rounded-[28px] bg-[var(--chocolate)] p-5 text-white shadow-soft">
+        <div className="flex items-center gap-3">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/12">
+            <Sparkles size={24} />
+          </span>
+          <div>
+            <p className="font-black">
+              {l === "en" ? "Live AI feedback" : "ฟีดแบ็กจาก AI แบบสด"}
+            </p>
+            <p className="mt-1 text-xs text-white/65">
+              {l === "en"
+                ? "With a safety-checked fallback"
+                : "พร้อมระบบสำรองที่ผ่านกติกาความปลอดภัย"}
+            </p>
+          </div>
+        </div>
+        <p className="mt-5 text-sm leading-6 text-white/72">
+          {l === "en"
+            ? "AI does not diagnose allergies or prescribe food. It helps owners interpret one trial without overstating what it proves."
+            : "AI ไม่วินิจฉัยการแพ้หรือสั่งอาหาร แต่ช่วยเจ้าของตีความการทดลองหนึ่งครั้งโดยไม่สรุปเกินหลักฐาน"}
+        </p>
+      </div>
+      <div className="mt-6 space-y-3">
+        <Link
+          href="/app/food/trial/"
+          className="pressable flex min-h-14 w-full items-center justify-center gap-2 rounded-[18px] bg-[var(--coral-dark)] px-5 py-3 text-[15px] font-extrabold text-white shadow-[0_10px_26px_rgba(216,58,79,.25)]"
+        >
+          {l === "en" ? "Try the AI-guided flow" : "ทดลอง Flow ที่มี AI ช่วย"}
+          <ArrowRight size={18} />
+        </Link>
+        <Link
+          href="/app/"
+          className="pressable flex min-h-14 w-full items-center justify-center rounded-[18px] border-2 border-[var(--chocolate)] bg-white px-5 py-3 text-[15px] font-extrabold text-[var(--chocolate)]"
+        >
+          {l === "en" ? "Back to PawProud home" : "กลับหน้าหลัก PawProud"}
+        </Link>
+      </div>
+    </>
+  );
+}
+
+function Today({
+  l,
+  state,
+  go,
+  openFood,
+  openAi,
+  openPassport,
+  legacy = false,
+}: {
+  l: Locale;
+  state: AppState;
+  go: (s: Screen) => void;
+  openFood: () => void;
+  openAi: () => void;
+  openPassport: () => void;
+  legacy?: boolean;
+}) {
+  if (!legacy) {
+    const hasObservation = Boolean(
+      state.choice && state.approach && state.intake && state.energy,
+    );
+    return (
+      <ServiceHome
+        locale={l}
+        snapshot={{
+          foodStatus: state.feedback
+            ? "ready"
+            : state.foodTrialStep !== "safety" || state.choice || state.approach
+              ? "in-progress"
+              : "new",
+          evidence: (hasObservation ? 1 : 0) + (state.checkedIn ? 1 : 0),
+          ordered: state.ordered,
+          checkedIn: state.checkedIn,
+        }}
+        onOpenFood={openFood}
+        onOpenAi={openAi}
+        onOpenPassport={openPassport}
+        onOpenSupport={() => go("help")}
+        onOpenProfile={() => go("profile")}
+      />
+    );
+  }
   const next = !state.ordered
     ? "trial"
     : !state.checkedIn
@@ -1714,9 +2381,16 @@ function Today({
         </div>
         <button
           onClick={() => go("profile")}
-          className="pressable grid h-14 w-14 place-items-center rounded-[20px] bg-[var(--soft)] text-2xl"
+          aria-label={l === "en" ? "Open Mochi’s profile" : "เปิดโปรไฟล์ของโมจิ"}
+          className="pressable relative h-14 w-14 overflow-hidden rounded-[20px] bg-[var(--soft)]"
         >
-          🐶
+          <Image
+            src="/brand/pawproud-app-icon.webp"
+            alt=""
+            fill
+            sizes="56px"
+            className="object-cover"
+          />
         </button>
       </div>
       <PawPath
@@ -2016,6 +2690,7 @@ function Plan({
 }
 
 function Passport({ l, state }: { l: Locale; state: AppState }) {
+  const [sharePreviewOpen, setSharePreviewOpen] = useState(false);
   const provenance = (tag: string) =>
     l === "en"
       ? tag
@@ -2043,6 +2718,68 @@ function Passport({ l, state }: { l: Locale; state: AppState }) {
           : l === "en"
             ? "Finished · none reported"
             : "กินหมด · ไม่พบอาการ";
+  const hasChoice = Boolean(state.choice);
+  const hasObservations = Boolean(
+    state.approach && state.intake && state.energy,
+  );
+  const hasRecordedTrial = hasChoice && hasObservations;
+  const hasCareActivity = Boolean(
+    hasChoice ||
+      state.approach ||
+      state.intake ||
+      state.energy ||
+      state.feedback ||
+      state.ordered ||
+      state.checkedIn,
+  );
+  const tastePrintTitle = hasRecordedTrial
+    ? state.choice === "unclear"
+      ? l === "en"
+        ? "TastePrint · Unclear"
+        : "TastePrint · ยังไม่ชัดเจน"
+      : l === "en"
+        ? "TastePrint · Early signal"
+        : "TastePrint · สัญญาณเบื้องต้น"
+    : l === "en"
+      ? "TastePrint · Pending"
+      : "TastePrint · รอข้อมูล";
+  const tastePrintStatus = hasRecordedTrial
+    ? state.choice === "unclear"
+      ? l === "en"
+        ? "No clear preference recorded · repeat recommended"
+        : "ยังไม่พบความชอบที่ชัดเจน · แนะนำให้ทดลองซ้ำ"
+      : state.feedback
+        ? l === "en"
+          ? "Aroma signal generated from owner observations"
+          : "สร้างสัญญาณด้านกลิ่นจากข้อมูลที่เจ้าของบันทึก"
+        : l === "en"
+          ? "Owner observations recorded · summary pending"
+          : "บันทึกข้อสังเกตแล้ว · รอสรุปผล"
+    : hasChoice
+      ? l === "en"
+        ? "Taste selected · observation not completed"
+        : "เลือกตัวอย่างแล้ว · ยังบันทึกข้อสังเกตไม่ครบ"
+      : l === "en"
+        ? "Complete a taste trial to create the first signal"
+        : "ทำการทดลองรสชาติเพื่อสร้างสัญญาณแรก";
+  const trialTitle = hasRecordedTrial
+    ? l === "en"
+      ? "Taste Trial #1"
+      : "ทดลองรสชาติ #1"
+    : l === "en"
+      ? "Taste trial · Pending"
+      : "ทดลองรสชาติ · รอบันทึก";
+  const trialStatus = hasRecordedTrial
+    ? l === "en"
+      ? "Owner reported approach, intake and body language"
+      : "เจ้าของรายงานการเข้าหา ปริมาณ และภาษากาย"
+    : hasChoice
+      ? l === "en"
+        ? "Taste selection saved · observation pending"
+        : "บันทึกตัวเลือกแล้ว · รอข้อสังเกต"
+      : l === "en"
+        ? "No trial recorded"
+        : "ยังไม่มีการทดลองที่บันทึกไว้";
   const events = [
     {
       icon: <UserRound />,
@@ -2055,20 +2792,14 @@ function Passport({ l, state }: { l: Locale; state: AppState }) {
     },
     {
       icon: <Sparkles />,
-      t: l === "en" ? "TastePrint · Early signal" : "TastePrint · สัญญาณแรก",
-      s:
-        l === "en"
-          ? "Aroma observed; 3 dimensions still learning"
-          : "พบสัญญาณด้านกลิ่น อีก 3 ด้านกำลังเรียนรู้",
+      t: tastePrintTitle,
+      s: tastePrintStatus,
       tag: "SYSTEM",
     },
     {
       icon: <Utensils />,
-      t: l === "en" ? "Taste Trial #1" : "ทดลองรสชาติ #1",
-      s:
-        l === "en"
-          ? "Owner reported approach, intake and body language"
-          : "เจ้าของรายงานการเข้าหา ปริมาณ และภาษากาย",
+      t: trialTitle,
+      s: trialStatus,
       tag: "OWNER",
     },
     {
@@ -2105,15 +2836,25 @@ function Passport({ l, state }: { l: Locale; state: AppState }) {
                 : "ชิสุผสม · 4 ปี · 6.8 กก."}
             </p>
           </div>
-          <div className="grid h-16 w-16 place-items-center rounded-[22px] bg-white text-4xl">
-            🐶
+          <div className="relative h-16 w-16 overflow-hidden rounded-[22px] bg-white">
+            <Image
+              src="/brand/pawproud-app-icon.webp"
+              alt={l === "en" ? "Mochi profile illustration" : "ภาพโปรไฟล์ของโมจิ"}
+              fill
+              sizes="64px"
+              className="object-cover"
+            />
           </div>
         </div>
         <div className="mt-5 flex items-center gap-2 text-xs text-white/70">
           <ShieldCheck size={15} />{" "}
           {l === "en"
-            ? "Owner-controlled prototype · updated today"
-            : "ต้นแบบที่เจ้าของควบคุม · อัปเดตวันนี้"}
+            ? hasCareActivity
+              ? "Owner-controlled prototype · updated today"
+              : "Owner-controlled prototype · no care activity recorded"
+            : hasCareActivity
+              ? "ต้นแบบที่เจ้าของควบคุม · อัปเดตวันนี้"
+              : "ต้นแบบที่เจ้าของควบคุม · ยังไม่มีข้อมูลการดูแล"}
         </div>
       </div>
       <div className="relative mt-6 pl-4">
@@ -2187,18 +2928,74 @@ function Passport({ l, state }: { l: Locale; state: AppState }) {
         ))}
       </div>
       <button
-        onClick={() =>
-          alert(
-            l === "en"
-              ? "Simulated preview only—nothing was shared."
-              : "เป็นเพียงตัวอย่าง—ยังไม่มีการแชร์ข้อมูล",
-          )
-        }
+        onClick={() => setSharePreviewOpen((open) => !open)}
+        aria-expanded={sharePreviewOpen}
         className="pressable mt-4 flex min-h-14 w-full items-center justify-center gap-2 rounded-[18px] border-2 border-[var(--chocolate)] bg-white font-black"
       >
         <Download size={18} />
-        {l === "en" ? "Preview share summary" : "ดูตัวอย่างสรุปสำหรับแชร์"}
+        {sharePreviewOpen
+          ? l === "en"
+            ? "Close share preview"
+            : "ปิดตัวอย่างสำหรับแชร์"
+          : l === "en"
+            ? "Preview share summary"
+            : "ดูตัวอย่างสรุปสำหรับแชร์"}
       </button>
+      <AnimatePresence initial={false}>
+        {sharePreviewOpen && (
+          <motion.section
+            initial={{ opacity: 0, height: 0, y: -8 }}
+            animate={{ opacity: 1, height: "auto", y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -8 }}
+            className="mt-3 overflow-hidden rounded-[24px] border border-[var(--line)] bg-white"
+            aria-label={l === "en" ? "Share preview" : "ตัวอย่างสำหรับแชร์"}
+          >
+            <div className="border-b border-[var(--line)] bg-[var(--soft)] px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-black">
+                  {l === "en" ? "Care summary preview" : "ตัวอย่างสรุปการดูแล"}
+                </p>
+                <TinyBadge tone="warning">
+                  {l === "en" ? "NOT SHARED" : "ยังไม่แชร์"}
+                </TinyBadge>
+              </div>
+              <p className="mt-1 text-xs text-[var(--muted)]">
+                {l === "en"
+                  ? "Review before choosing where to share."
+                  : "ตรวจสอบก่อนเลือกว่าจะแชร์ที่ใด"}
+              </p>
+            </div>
+            <div className="space-y-3 p-4 text-sm">
+              <div>
+                <p className="text-xs font-bold text-[var(--muted)]">
+                  {l === "en" ? "Dog" : "สุนัข"}
+                </p>
+                <p className="font-black">Mochi · 4 years · 6.8 kg</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-[var(--muted)]">
+                  {l === "en" ? "Taste profile" : "โปรไฟล์รสชาติ"}
+                </p>
+                <p className="font-black">{tastePrintTitle}</p>
+                <p className="mt-0.5 text-xs leading-5 text-[var(--muted)]">
+                  {tastePrintStatus}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-[var(--muted)]">
+                  {l === "en" ? "Meal check-in" : "เช็กมื้ออาหาร"}
+                </p>
+                <p className="font-black">{mealStatus}</p>
+              </div>
+              <p className="border-t border-dashed border-[var(--line)] pt-3 text-xs leading-5 text-[var(--muted)]">
+                {l === "en"
+                  ? "Sources: owner profile, owner observations, and PawProud system summary. This preview has not been sent."
+                  : "แหล่งข้อมูล: โปรไฟล์จากเจ้าของ ข้อสังเกตจากเจ้าของ และสรุปจากระบบ PawProud ตัวอย่างนี้ยังไม่ได้ถูกส่ง"}
+              </p>
+            </div>
+          </motion.section>
+        )}
+      </AnimatePresence>
       <p className="mt-3 text-center text-xs text-[var(--muted)]">
         {l === "en"
           ? "None reported does not mean no condition."
@@ -2289,8 +3086,14 @@ function Profile({ l }: { l: Locale }) {
       <Eyebrow>{l === "en" ? "Dog profile" : "โปรไฟล์สุนัข"}</Eyebrow>
       <div className="rounded-[30px] bg-white p-5 shadow-soft">
         <div className="flex items-center gap-4">
-          <div className="grid h-20 w-20 place-items-center rounded-[28px] bg-[var(--soft)] text-5xl">
-            🐶
+          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-[28px] bg-[var(--soft)]">
+            <Image
+              src="/brand/pawproud-app-icon.webp"
+              alt={l === "en" ? "Mochi profile illustration" : "ภาพโปรไฟล์ของโมจิ"}
+              fill
+              sizes="80px"
+              className="object-cover"
+            />
           </div>
           <div>
             <TinyBadge tone="warning">
@@ -2433,11 +3236,37 @@ function More({
       <Eyebrow>
         {l === "en" ? "Settings & support" : "การตั้งค่าและความช่วยเหลือ"}
       </Eyebrow>
-      <PageTitle>
-        {l === "en" ? "Make PawProud yours." : "ปรับ PawProud ให้เป็นของคุณ"}
-      </PageTitle>
+      <PageTitle>{l === "en" ? "More" : "เพิ่มเติม"}</PageTitle>
       <div className="mt-6 space-y-3">
         {[
+          {
+            i: <CalendarDays />,
+            t: l === "en" ? "Food plan" : "แผนอาหาร",
+            s: state.subscribed
+              ? state.paused
+                ? l === "en"
+                  ? "Subscription paused"
+                  : "พักการสมัครสมาชิกอยู่"
+                : l === "en"
+                  ? "Subscription active"
+                  : "การสมัครสมาชิกกำลังใช้งาน"
+              : l === "en"
+                ? "No active subscription"
+                : "ยังไม่มีการสมัครสมาชิก",
+            a: () => go("plan"),
+          },
+          {
+            i: <Truck />,
+            t: l === "en" ? "Delivery status" : "สถานะการจัดส่ง",
+            s: state.ordered
+              ? l === "en"
+                ? "Order #PP-MOCHI-01"
+                : "คำสั่งซื้อ #PP-MOCHI-01"
+              : l === "en"
+                ? "No active order"
+                : "ไม่มีคำสั่งซื้อที่กำลังจัดส่ง",
+            a: () => go("delivery"),
+          },
           {
             i: <UserRound />,
             t: l === "en" ? "Mochi’s profile" : "โปรไฟล์โมจิ",
@@ -2464,6 +3293,15 @@ function More({
                 ? "Off"
                 : "ปิด",
             a: () => setSoundOn(!soundOn),
+          },
+          {
+            i: <Play />,
+            t: l === "en" ? "Replay guided tour" : "ดูคำแนะนำอีกครั้ง",
+            s:
+              l === "en"
+                ? "Restart the first-use walkthrough"
+                : "เริ่มคำแนะนำการใช้งานครั้งแรกใหม่",
+            a: () => go("welcome"),
           },
           {
             i: <Languages />,
@@ -2515,21 +3353,103 @@ function More({
   );
 }
 
-export function ProductExperience() {
-  const { state, setState, hydrated } = usePersistedState();
+export function ProductExperience({
+  entry = "hub",
+}: {
+  entry?: ProductEntry;
+}) {
+  const router = useRouter();
+  const { state, setState, hydrated } = usePersistedState(entry);
   const [loading, setLoading] = useState(false);
+  const [bootReady, setBootReady] = useState(false);
+  const [aiPreviewLoading, setAiPreviewLoading] = useState(false);
+  const [aiPreviewFeedback, setAiPreviewFeedback] = useState("");
+  const [aiPreviewSource, setAiPreviewSource] = useState<
+    "ai" | "fallback" | ""
+  >("");
   const [soundOn, setSoundOn] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [guideTime, setGuideTime] = useState(0);
   const [guideDuration, setGuideDuration] = useState(37.1);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const feedbackRequestIdRef = useRef(0);
+  const feedbackRequestRef = useRef<{
+    id: number;
+    controller: AbortController;
+    timeoutId: number;
+  } | null>(null);
+  const aiPreviewRequestIdRef = useRef(0);
+  const aiPreviewRequestRef = useRef<{
+    id: number;
+    controller: AbortController;
+    timeoutId: number;
+  } | null>(null);
   const l = state.locale;
   useEffect(() => {
     document.documentElement.lang = l;
   }, [l]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [entry, state.screen]);
+  useEffect(() => {
+    if (!hydrated) return;
+    let seen = false;
+    try {
+      seen = sessionStorage.getItem("pawproud-loader-seen") === "1";
+    } catch {
+      /* session storage is optional */
+    }
+    const timer = window.setTimeout(() => {
+      setBootReady(true);
+      if (!seen) {
+        try {
+          sessionStorage.setItem("pawproud-loader-seen", "1");
+        } catch {
+          /* session storage is optional */
+        }
+      }
+    }, seen ? 0 : 1050);
+    return () => window.clearTimeout(timer);
+  }, [hydrated]);
+  useEffect(
+    () => () => {
+      const feedbackRequest = feedbackRequestRef.current;
+      if (feedbackRequest) {
+        window.clearTimeout(feedbackRequest.timeoutId);
+        feedbackRequest.controller.abort();
+        feedbackRequestRef.current = null;
+      }
+      feedbackRequestIdRef.current += 1;
+
+      const aiPreviewRequest = aiPreviewRequestRef.current;
+      if (aiPreviewRequest) {
+        window.clearTimeout(aiPreviewRequest.timeoutId);
+        aiPreviewRequest.controller.abort();
+        aiPreviewRequestRef.current = null;
+      }
+      aiPreviewRequestIdRef.current += 1;
+    },
+    [],
+  );
   const patch = (next: Partial<AppState>) =>
     setState((s) => ({ ...s, ...next }));
-  const go = (screen: Screen) => patch({ screen });
+  const go = (screen: Screen) =>
+    setState((s) => ({
+      ...s,
+      screen,
+      ...(isFoodTrialStep(screen) &&
+      (isFoodTrialStep(s.screen) ||
+        (entry === "food-trial" && s.screen !== "today"))
+        ? { foodTrialStep: screen }
+        : {}),
+    }));
+  const navigateFromNav = (screen: Screen) => {
+    if (screen === "today") return router.push("/app/");
+    if (screen === "foodService") return router.push("/app/food/");
+    if (screen === "aiGuide") return router.push("/app/ai/");
+    if (screen === "passport") return router.push("/app/passport/");
+    go(screen);
+  };
   const playGuide = () => {
     setSoundOn(true);
     audioRef.current?.play().catch(() => setPlaying(false));
@@ -2555,6 +3475,7 @@ export function ProductExperience() {
     "safety",
     "safetyHold",
     "trial",
+    "camera",
     "observe",
     "feedback",
     "tasteprint",
@@ -2568,7 +3489,8 @@ export function ProductExperience() {
     safety: "welcome",
     safetyHold: "safety",
     trial: "safety",
-    observe: "trial",
+    camera: "trial",
+    observe: "camera",
     feedback: "observe",
     tasteprint: "feedback",
     firstBowl: "tasteprint",
@@ -2583,7 +3505,8 @@ export function ProductExperience() {
   const progressMap: Partial<Record<Screen, number>> = {
     safety: 10,
     trial: 25,
-    observe: 38,
+    camera: 33,
+    observe: 44,
     feedback: 50,
     tasteprint: 63,
     firstBowl: 75,
@@ -2594,6 +3517,8 @@ export function ProductExperience() {
   };
   const navScreens: Screen[] = [
     "today",
+    "foodService",
+    "aiGuide",
     "tasteprint",
     "plan",
     "passport",
@@ -2604,6 +3529,16 @@ export function ProductExperience() {
   ];
 
   const fetchFeedback = async () => {
+    const startedAt = Date.now();
+    const previousRequest = feedbackRequestRef.current;
+    if (previousRequest) {
+      window.clearTimeout(previousRequest.timeoutId);
+      previousRequest.controller.abort();
+    }
+    const requestId = (feedbackRequestIdRef.current += 1);
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 7000);
+    feedbackRequestRef.current = { id: requestId, controller, timeoutId };
     setLoading(true);
     go("feedback");
     const fallback =
@@ -2615,8 +3550,6 @@ export function ProductExperience() {
           ? "โมจิยังไม่แสดงตัวเลือกแรกที่ชัดเจน ซึ่งก็เป็นข้อมูลที่มีประโยชน์ ควรเปรียบเทียบแบบเดิมอีกวันโดยไม่เปลี่ยนหลายอย่างพร้อมกัน"
           : `ในการทดลองนี้ โมจิตอบสนองต่อกลิ่น${state.choice === "salmon" ? "แซลมอน" : "ไก่"}มากกว่า ให้ถือเป็นสัญญาณความชอบเบื้องต้น ไม่ใช่ข้อสรุปสุดท้าย และควรทดลองซ้ำอีกวันก่อนเปลี่ยนอาหารประจำ`;
     try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 7000);
       const res = await fetch("/api/feedback", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -2631,22 +3564,113 @@ export function ProductExperience() {
         }),
         signal: controller.signal,
       });
-      clearTimeout(timer);
       if (!res.ok) throw new Error("feedback unavailable");
       const data = await res.json();
-      patch({
-        feedback: data.feedback || fallback,
-        feedbackLocale: l,
-        feedbackSource: data.source === "ai" ? "ai" : "fallback",
-      });
+      if (feedbackRequestRef.current?.id === requestId) {
+        patch({
+          feedback: data.feedback || fallback,
+          feedbackLocale: l,
+          feedbackSource: data.source === "ai" ? "ai" : "fallback",
+        });
+      }
     } catch {
-      patch({
-        feedback: fallback,
-        feedbackLocale: l,
-        feedbackSource: "fallback",
-      });
+      if (feedbackRequestRef.current?.id === requestId) {
+        patch({
+          feedback: fallback,
+          feedbackLocale: l,
+          feedbackSource: "fallback",
+        });
+      }
+    } finally {
+      window.clearTimeout(timeoutId);
+      await waitForMinimumProcessingTime(startedAt);
+      if (feedbackRequestRef.current?.id === requestId) {
+        feedbackRequestRef.current = null;
+        setLoading(false);
+      }
     }
-    setLoading(false);
+  };
+
+  const hasRecordedSignal = Boolean(
+    state.choice && state.approach && state.intake && state.energy,
+  );
+  const localizedRecordedFeedback =
+    l === "en"
+      ? state.choice === "unclear"
+        ? "Mochi did not show a clear first choice in this trial. That is useful evidence too: repeat the same comparison another day without changing multiple things at once."
+        : `Mochi showed a stronger response to the ${state.choice} aroma in this trial. Treat this as an early preference signal, not a final conclusion. Repeat the comparison on another day before changing his regular food.`
+      : state.choice === "unclear"
+        ? "โมจิยังไม่แสดงตัวเลือกแรกที่ชัดเจน ซึ่งก็เป็นข้อมูลที่มีประโยชน์ ควรเปรียบเทียบแบบเดิมอีกวันโดยไม่เปลี่ยนหลายอย่างพร้อมกัน"
+        : `ในการทดลองนี้ โมจิตอบสนองต่อกลิ่น${state.choice === "salmon" ? "แซลมอน" : "ไก่"}มากกว่า ให้ถือเป็นสัญญาณความชอบเบื้องต้น ไม่ใช่ข้อสรุปสุดท้าย และควรทดลองซ้ำอีกวันก่อนเปลี่ยนอาหารประจำ`;
+  const recordedFeedbackForLocale =
+    state.feedback && state.feedbackLocale === l
+      ? state.feedback
+      : localizedRecordedFeedback;
+  const fetchAiPreview = async () => {
+    const startedAt = Date.now();
+    const previousRequest = aiPreviewRequestRef.current;
+    if (previousRequest) {
+      window.clearTimeout(previousRequest.timeoutId);
+      previousRequest.controller.abort();
+    }
+    const requestId = (aiPreviewRequestIdRef.current += 1);
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 7000);
+    aiPreviewRequestRef.current = { id: requestId, controller, timeoutId };
+    setAiPreviewLoading(true);
+    setAiPreviewFeedback("");
+    setAiPreviewSource("");
+    const payload = hasRecordedSignal
+      ? {
+          choice: state.choice,
+          approach: state.approach,
+          intake: state.intake,
+          energy: state.energy,
+        }
+      : {
+          choice: "salmon" as const,
+          approach: "quick",
+          intake: "most",
+          energy: "bright",
+        };
+    const fallback =
+      l === "en"
+        ? "Mochi approached the salmon first, ate most of the sample, and stayed bright and engaged. This is a first clue, so repeat the same comparison another day before changing Mochi’s regular food."
+        : "โมจิเข้าหาแซลมอนก่อน กินเกือบหมด และยังดูสนใจ นี่เป็นเพียงเบาะแสแรก ควรลองเปรียบเทียบแบบเดิมอีกวันก่อนเปลี่ยนอาหารประจำของโมจิ";
+    try {
+      const response = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          locale: l,
+          dogName: "Mochi",
+          scenarioId: "taste-trial-01",
+          ...payload,
+        }),
+        signal: controller.signal,
+      });
+      if (!response.ok) throw new Error("AI read unavailable");
+      const data = (await response.json()) as {
+        feedback?: string;
+        source?: string;
+      };
+      if (aiPreviewRequestRef.current?.id === requestId) {
+        setAiPreviewFeedback(data.feedback || fallback);
+        setAiPreviewSource(data.source === "ai" ? "ai" : "fallback");
+      }
+    } catch {
+      if (aiPreviewRequestRef.current?.id === requestId) {
+        setAiPreviewFeedback(fallback);
+        setAiPreviewSource("fallback");
+      }
+    } finally {
+      window.clearTimeout(timeoutId);
+      await waitForMinimumProcessingTime(startedAt);
+      if (aiPreviewRequestRef.current?.id === requestId) {
+        aiPreviewRequestRef.current = null;
+        setAiPreviewLoading(false);
+      }
+    }
   };
 
   const content = (() => {
@@ -2661,6 +3685,39 @@ export function ProductExperience() {
             onSilent={closeGuide}
           />
         );
+      case "foodService":
+        return (
+          <FoodServiceEntry
+            l={l}
+            state={state}
+            go={go}
+            openTrial={() => router.push("/app/food/trial/")}
+            restartTrial={() => router.push("/app/food/trial/?reset=1")}
+            openAi={() => router.push("/app/ai/")}
+          />
+        );
+      case "aiGuide":
+        return (
+          <AiGuideEntry
+            l={l}
+            feedback={
+              hasRecordedSignal
+                ? recordedFeedbackForLocale
+                : aiPreviewFeedback
+            }
+            source={
+              hasRecordedSignal
+                ? state.feedbackLocale === l
+                  ? state.feedbackSource
+                  : "fallback"
+                : aiPreviewSource
+            }
+            loading={aiPreviewLoading}
+            hasRecordedSignal={hasRecordedSignal}
+            run={fetchAiPreview}
+            startTrial={() => router.push("/app/food/trial/?reset=1")}
+          />
+        );
       case "safety":
         return <Safety l={l} go={go} />;
       case "safetyHold":
@@ -2672,6 +3729,14 @@ export function ProductExperience() {
             choice={state.choice}
             setChoice={(choice) => patch({ choice })}
             go={go}
+          />
+        );
+      case "camera":
+        return (
+          <CameraMoment
+            locale={l}
+            onContinue={() => go("observe")}
+            onSkip={() => go("observe")}
           />
         );
       case "observe":
@@ -2721,20 +3786,35 @@ export function ProductExperience() {
             setWarning={(warningReported) => patch({ warningReported })}
             submit={() => {
               patch({ checkedIn: true });
-              go(
-                state.warningReported
-                  ? "safetyHold"
-                  : state.checkin === "skipped"
-                    ? "today"
-                    : "subscription",
-              );
+              if (state.warningReported) {
+                go("safetyHold");
+              } else if (state.checkin === "skipped") {
+                router.push("/app/");
+              } else {
+                go("subscription");
+              }
             }}
           />
         );
       case "subscription":
-        return <Subscription l={l} patch={patch} done={() => go("today")} />;
+        return (
+          <Subscription
+            l={l}
+            patch={patch}
+            done={() => router.push("/app/")}
+          />
+        );
       case "today":
-        return <Today l={l} state={state} go={go} />;
+        return (
+          <Today
+            l={l}
+            state={state}
+            go={go}
+            openFood={() => router.push("/app/food/")}
+            openAi={() => router.push("/app/ai/")}
+            openPassport={() => router.push("/app/passport/")}
+          />
+        );
       case "plan":
         return <Plan l={l} state={state} patch={patch} go={go} />;
       case "passport":
@@ -2751,7 +3831,7 @@ export function ProductExperience() {
             l={l}
             state={state}
             patch={patch}
-            reset={() => setState({ ...seed, locale: l })}
+            reset={() => setState({ ...seed, locale: l, screen: "today" })}
             go={go}
             soundOn={soundOn}
             setSoundOn={(enabled) => (enabled ? playGuide() : closeGuide())}
@@ -2760,15 +3840,7 @@ export function ProductExperience() {
     }
   })();
 
-  if (!hydrated)
-    return (
-      <div className="grid min-h-screen place-items-center">
-        <div className="animate-bob text-center">
-          <PawPrint className="mx-auto text-[var(--coral-dark)]" size={42} />
-          <p className="mt-3 text-sm font-black">PawProud</p>
-        </div>
-      </div>
-    );
+  if (!hydrated || !bootReady) return <PawProudLoader locale={l} />;
   const inFlow = flow.includes(state.screen);
   const hasNav = navScreens.includes(state.screen);
   return (
@@ -2796,14 +3868,25 @@ export function ProductExperience() {
             : undefined
         }
         onBack={
-          state.screen !== "welcome" && backMap[state.screen]
-            ? () => go(backMap[state.screen]!)
-            : undefined
+          (state.screen === "foodService" || state.screen === "aiGuide") &&
+          entry !== "hub"
+            ? () => router.push("/app/")
+            : state.screen === "safety" && entry === "food-trial"
+            ? () => router.push("/app/food/")
+            : state.screen === "passport" && entry === "passport"
+              ? () => router.push("/app/")
+              : state.screen === "tasteprint" && entry === "food"
+                ? () => go("foodService")
+              : state.screen !== "welcome" && backMap[state.screen]
+                ? () => go(backMap[state.screen]!)
+                : undefined
         }
         progress={progressMap[state.screen]}
       />
       <Shell>{<div key={state.screen}>{content}</div>}</Shell>
-      {hasNav && <BottomNav screen={state.screen} go={go} l={l} />}
+      {hasNav && (
+        <BottomNav screen={state.screen} go={navigateFromNav} l={l} />
+      )}
       <AnimatePresence>
         {soundOn && (
           <VoiceGuide

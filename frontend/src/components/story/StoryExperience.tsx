@@ -8,9 +8,19 @@ import {
   ArrowRight,
   Check,
   CircleAlert,
+  Cloud,
+  Database,
+  EyeOff,
+  FileJson,
   Languages,
+  MonitorSmartphone,
   PawPrint,
   Play,
+  ReceiptText,
+  ShieldCheck,
+  ShoppingBag,
+  Sparkles,
+  Utensils,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -75,7 +85,7 @@ function BrandHeader({
             {locale === "en" ? "ไทย" : "EN"}
           </button>
           <Link
-            href="/app/?demo=fresh"
+            href="/app/"
             className="pressable hidden h-11 items-center gap-2 rounded-2xl bg-[var(--chocolate)] px-4 text-xs font-black text-white sm:flex"
           >
             {c.prototype}
@@ -121,7 +131,9 @@ function BowlStillLife() {
         <div className="h-3 w-20 rounded bg-[var(--coral)]" />
         <div className="mt-2 h-2 w-full rounded bg-[var(--line)]" />
         <div className="mt-2 h-2 w-3/4 rounded bg-[var(--line)]" />
-        <div className="mt-5 text-3xl">🛍️</div>
+        <span className="mt-5 grid h-12 w-12 place-items-center rounded-2xl bg-[var(--soft)] text-[var(--coral-dark)]">
+          <ShoppingBag size={24} />
+        </span>
       </motion.div>
       <div className="absolute bottom-[14%] left-[8%] right-[8%] h-[29%] rounded-[50%] border-[18px] border-[#e5c5aa] bg-[var(--chocolate)] shadow-[0_24px_0_#bd8c6b,0_34px_55px_rgba(75,40,28,.2)]">
         <span className="absolute inset-x-0 top-[30%] text-center text-4xl opacity-45">
@@ -131,9 +143,9 @@ function BowlStillLife() {
       <motion.div
         animate={{ rotate: [-8, 6, -8], y: [0, -6, 0] }}
         transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-[2%] right-[4%] grid h-24 w-24 place-items-center rounded-[30px] bg-white text-5xl shadow-soft"
+        className="absolute bottom-[2%] right-[4%] grid h-24 w-24 place-items-center rounded-[30px] bg-white text-[var(--trust)] shadow-soft"
       >
-        🧾
+        <ReceiptText size={42} strokeWidth={1.9} />
       </motion.div>
       <motion.div
         animate={{ scale: [1, 1.06, 1] }}
@@ -279,11 +291,13 @@ const EvidenceCard = ({
   label,
   note,
   href,
+  locale,
 }: {
   number: string;
   label: string;
   note: string;
   href: string;
+  locale: Locale;
 }) => (
   <a
     href={href}
@@ -297,7 +311,7 @@ const EvidenceCard = ({
     <p className="mt-2 font-black leading-5">{label}</p>
     <p className="mt-3 text-xs leading-5 text-[var(--muted)]">{note}</p>
     <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-black text-[var(--trust)]">
-      SOURCE{" "}
+      {locale === "en" ? "SOURCE" : "แหล่งข้อมูล"}{" "}
       <ArrowRight
         size={12}
         className="transition-transform group-hover:translate-x-1"
@@ -305,6 +319,198 @@ const EvidenceCard = ({
     </span>
   </a>
 );
+
+function ServiceArchitecture({ locale }: { locale: Locale }) {
+  const steps =
+    locale === "en"
+      ? [
+          {
+            title: "Owner–dog trial",
+            detail: "Two physical tastes; the owner observes the dog.",
+            status: "SIMULATED",
+            live: false,
+            Icon: Utensils,
+          },
+          {
+            title: "Product Web",
+            detail: "Records structured approach, choice and intake signals.",
+            status: "WORKING",
+            live: true,
+            Icon: MonitorSmartphone,
+          },
+          {
+            title: "POST /api/feedback",
+            detail: "Sends validated text and structured observations.",
+            status: "WORKING",
+            live: true,
+            Icon: FileJson,
+          },
+          {
+            title: "Cloudflare Worker",
+            detail: "Validates input, then requests a Workers AI explanation.",
+            status: "WORKING",
+            live: true,
+            Icon: Cloud,
+          },
+          {
+            title: "Safe explanation",
+            detail: "Returns AI or deterministic fallback with its source shown.",
+            status: "WORKING",
+            live: true,
+            Icon: ShieldCheck,
+          },
+          {
+            title: "Care memory",
+            detail: "Saves the result locally for Care Passport continuity.",
+            status: "WORKING",
+            live: true,
+            Icon: Database,
+          },
+        ]
+      : [
+          {
+            title: "การลองของเจ้าของ–สุนัข",
+            detail: "ลองสองรสแบบกายภาพ แล้วเจ้าของสังเกตพฤติกรรม",
+            status: "จำลอง",
+            live: false,
+            Icon: Utensils,
+          },
+          {
+            title: "Product Web",
+            detail: "บันทึกการเข้าหา การเลือก และปริมาณที่กินแบบมีโครงสร้าง",
+            status: "ใช้งานได้",
+            live: true,
+            Icon: MonitorSmartphone,
+          },
+          {
+            title: "POST /api/feedback",
+            detail: "ส่งข้อความและข้อสังเกตที่ตรวจรูปแบบแล้ว",
+            status: "ใช้งานได้",
+            live: true,
+            Icon: FileJson,
+          },
+          {
+            title: "Cloudflare Worker",
+            detail: "ตรวจข้อมูล แล้วขอคำอธิบายจาก Workers AI",
+            status: "ใช้งานได้",
+            live: true,
+            Icon: Cloud,
+          },
+          {
+            title: "คำอธิบายที่ปลอดภัย",
+            detail: "คืนผลจาก AI หรือ fallback พร้อมระบุแหล่งที่มา",
+            status: "ใช้งานได้",
+            live: true,
+            Icon: ShieldCheck,
+          },
+          {
+            title: "ความจำการดูแล",
+            detail: "เก็บผลไว้ในเครื่องเพื่อใช้ต่อใน Care Passport",
+            status: "ใช้งานได้",
+            live: true,
+            Icon: Database,
+          },
+        ];
+
+  return (
+    <section className="relative overflow-hidden bg-[#f3e5d8] px-4 py-20 md:px-8 md:py-24">
+      <div className="pointer-events-none absolute -right-24 top-8 h-72 w-72 rounded-full border-[54px] border-white/45" />
+      <div className="relative mx-auto max-w-[1240px]">
+        <div className="grid gap-7 lg:grid-cols-[.68fr_1.32fr] lg:items-end">
+          <div>
+            <StoryTag>
+              {locale === "en" ? "How the prototype works" : "ต้นแบบทำงานอย่างไร"}
+            </StoryTag>
+            <h2 className="display balanced mt-5 text-4xl leading-[1.03] font-black md:text-6xl">
+              {locale === "en" ? (
+                <>
+                  One observed meal.
+                  <br />
+                  <span className="text-[var(--coral-dark)]">A traceable answer.</span>
+                </>
+              ) : (
+                <>
+                  หนึ่งมื้อที่สังเกตได้
+                  <br />
+                  <span className="text-[var(--coral-dark)]">หนึ่งคำตอบที่ตรวจสอบที่มาได้</span>
+                </>
+              )}
+            </h2>
+          </div>
+          <p className="max-w-2xl text-base leading-7 text-[var(--muted)] lg:justify-self-end">
+            {locale === "en"
+              ? "The prototype turns owner-recorded signals into an explainable response. The physical tasting moment is staged for the demo; the web state, API path, validation, fallback and source label are implemented."
+              : "ต้นแบบเปลี่ยนสัญญาณที่เจ้าของบันทึกเป็นคำอธิบายที่ตรวจสอบได้ ช่วงลองอาหารจริงเป็นฉากจำลองสำหรับเดโม ส่วนสถานะบนเว็บ เส้นทาง API การตรวจข้อมูล fallback และป้ายแหล่งที่มาทำงานแล้ว"}
+          </p>
+        </div>
+
+        <div className="mt-10 grid gap-7 lg:grid-cols-6 lg:gap-3">
+          {steps.map(({ title, detail, status, live, Icon }, i) => (
+            <div className="contents" key={title}>
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.07 }}
+                className={`relative min-h-[220px] rounded-[28px] p-5 ${
+                  live
+                    ? "bg-[var(--chocolate)] text-white shadow-[0_18px_36px_rgba(68,35,25,.16)]"
+                    : "border-2 border-dashed border-[var(--coral)]/55 bg-white/65 text-[var(--ink)]"
+                }`}
+              >
+                <div
+                  className={`grid h-11 w-11 place-items-center rounded-2xl ${
+                    live
+                      ? "bg-white/12 text-[var(--honey)]"
+                      : "bg-[var(--soft)] text-[var(--coral-dark)]"
+                  }`}
+                >
+                  <Icon size={22} />
+                </div>
+                <p
+                  className={`mt-5 text-[9px] font-black tracking-[.15em] ${
+                    live ? "text-[#8ee0bf]" : "text-[var(--coral-dark)]"
+                  }`}
+                >
+                  {status}
+                </p>
+                <p className="mt-2 text-base font-black leading-5">{title}</p>
+                <p className={`mt-2 text-xs leading-5 ${live ? "text-white/58" : "text-[var(--muted)]"}`}>
+                  {detail}
+                </p>
+                {i < steps.length - 1 && (
+                  <span className="absolute -bottom-5 left-1/2 z-10 grid h-8 w-8 -translate-x-1/2 place-items-center rounded-full bg-[var(--coral-dark)] text-white shadow-md lg:-right-[22px] lg:bottom-auto lg:left-auto lg:top-1/2 lg:translate-x-0 lg:-translate-y-1/2">
+                    <ArrowRight className="rotate-90 lg:rotate-0" size={15} />
+                  </span>
+                )}
+              </motion.div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-7 grid gap-3 rounded-[26px] border border-[var(--line)] bg-white/80 p-5 md:grid-cols-[auto_1fr_auto] md:items-center">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#fff0e6] text-[var(--danger)]">
+            <EyeOff size={24} />
+          </span>
+          <div>
+            <p className="font-black">
+              {locale === "en" ? "No image upload. No computer vision." : "ไม่อัปโหลดภาพ และไม่มี Computer Vision"}
+            </p>
+            <p className="mt-1 text-sm leading-6 text-[var(--muted)]">
+              {locale === "en"
+                ? "The camera moment is a simulated interaction cue. The AI receives only the owner’s structured text observations—not a photo, video or diagnosis request."
+                : "ช่วงกล้องเป็นเพียงจังหวะจำลองการใช้งาน AI รับเฉพาะข้อสังเกตแบบข้อความที่เจ้าของยืนยัน ไม่ได้รับรูป วิดีโอ หรือคำขอวินิจฉัย"}
+            </p>
+          </div>
+          <span className="inline-flex w-fit items-center gap-2 rounded-full bg-[var(--mint)] px-3 py-2 text-[10px] font-black tracking-[.1em] text-[var(--success)]">
+            <Sparkles size={14} />
+            {locale === "en" ? "SOURCE LABEL SHOWN" : "แสดงแหล่งที่มาของผล"}
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export function StoryExperience() {
   const [locale, setLocale] = useState<Locale>("en");
@@ -372,7 +578,7 @@ export function StoryExperience() {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/app/?demo=fresh"
+                href="/app/food/"
                 className="pressable flex min-h-14 items-center justify-center gap-2 rounded-[18px] bg-[var(--coral-dark)] px-6 font-black text-white shadow-[0_14px_30px_rgba(216,58,79,.25)]"
               >
                 {locale === "en" ? "Let Mochi answer" : "ให้โมจิตอบ"}
@@ -519,7 +725,7 @@ export function StoryExperience() {
                 : "เจ้าของบันทึกว่าน้องเข้าหา เลือก และกินอะไร PawProud แยกข้อสังเกตออกจากการตีความ และแสดงสิ่งที่ยังไม่รู้"}
             </p>
             <Link
-              href="/app/?demo=fresh"
+              href="/app/food/"
               className="pressable mt-8 inline-flex min-h-14 items-center gap-2 rounded-[18px] bg-white px-6 font-black text-[var(--chocolate)]"
             >
               {locale === "en"
@@ -694,8 +900,20 @@ export function StoryExperience() {
                 ? "Care Passport keeps identity, TastePrint, trials, meals, owner notes, delivery state, and safety observations together—under the owner’s control."
                 : "Care Passport เก็บข้อมูลตัวตน TastePrint การทดลอง มื้ออาหาร บันทึกเจ้าของ การจัดส่ง และข้อสังเกตด้านความปลอดภัยไว้ด้วยกัน โดยเจ้าของเป็นผู้ควบคุม"}
             </p>
+            <div className="mt-6 border-l-4 border-[var(--honey)] pl-5">
+              <p className="text-sm font-black text-[var(--ink)]">
+                {locale === "en"
+                  ? "Service-dog-inspired care discipline—not a service-dog provider."
+                  : "นำวินัยการดูแลจากระบบสุนัขช่วยเหลือมาใช้ แต่ไม่ใช่ผู้ให้บริการสุนัขช่วยเหลือ"}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                {locale === "en"
+                  ? "We borrow the focus on the dog–person team, welfare, fit, preparation, and continuity. PawProud does not train, certify, register, or create public-access rights."
+                  : "เราใช้แนวคิดเรื่องทีมคน–สุนัข สวัสดิภาพ ความเหมาะสม การเตรียมพร้อม และความต่อเนื่อง โดย PawProud ไม่ฝึก รับรอง ขึ้นทะเบียน หรือสร้างสิทธิ์เข้าถึงสถานที่สาธารณะ"}
+              </p>
+            </div>
             <Link
-              href="/app/?demo=fresh"
+              href="/app/passport/"
               className="pressable mt-8 inline-flex min-h-14 items-center gap-2 rounded-[18px] bg-[var(--chocolate)] px-6 font-black text-white"
             >
               {locale === "en"
@@ -710,16 +928,32 @@ export function StoryExperience() {
                 <StoryTag light>CARE PASSPORT</StoryTag>
                 <p className="display mt-3 text-3xl font-black">Mochi</p>
               </div>
-              <span className="text-5xl">🐶</span>
+              <span className="relative h-16 w-16 overflow-hidden rounded-[22px] border-2 border-white/20 bg-white">
+                <Image
+                  src="/brand/pawproud-app-icon.webp"
+                  alt="Mochi"
+                  fill
+                  sizes="64px"
+                  className="object-cover"
+                />
+              </span>
             </div>
             <div className="relative mt-7 pl-10">
               <div className="absolute bottom-3 left-4 top-3 w-1 rounded-full bg-gradient-to-b from-[var(--coral)] via-[var(--honey)] to-[#71c8a6]" />
-              {[
-                ["Taste Trial", "Owner report"],
-                ["TastePrint", "Early signal"],
-                ["First Bowl", "One-time"],
-                ["Meal check-in", "Accepted"],
-              ].map(([a, b], i) => (
+              {(locale === "en"
+                ? [
+                    ["Taste Trial", "Owner report"],
+                    ["TastePrint", "Early signal"],
+                    ["First Bowl", "One-time order"],
+                    ["Meal check-in", "Accepted"],
+                  ]
+                : [
+                    ["Taste Trial", "เจ้าของบันทึก"],
+                    ["TastePrint", "สัญญาณเบื้องต้น"],
+                    ["First Bowl", "สั่งครั้งเดียว"],
+                    ["เช็กมื้ออาหาร", "ยอมรับอาหารแล้ว"],
+                  ]
+              ).map(([a, b], i) => (
                 <motion.div
                   key={a}
                   initial={{ opacity: 0, x: 14 }}
@@ -738,23 +972,25 @@ export function StoryExperience() {
             </div>
             <div className="mt-4 grid grid-cols-2 gap-3">
               <div className="rounded-[20px] border border-dashed border-white/25 p-4 text-sm text-white/50">
-                HomeReady
+                {locale === "en" ? "HomeReady" : "บ้านพร้อมดูแล"}
                 <br />
                 <span className="text-[9px] font-black tracking-wider">
-                  FUTURE CONCEPT
+                  {locale === "en" ? "FUTURE CONCEPT" : "แนวคิดอนาคต"}
                 </span>
               </div>
               <div className="rounded-[20px] border border-dashed border-white/25 p-4 text-sm text-white/50">
-                Emergency
+                {locale === "en" ? "Emergency" : "เหตุฉุกเฉิน"}
                 <br />
                 <span className="text-[9px] font-black tracking-wider">
-                  FUTURE CONCEPT
+                  {locale === "en" ? "FUTURE CONCEPT" : "แนวคิดอนาคต"}
                 </span>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      <ServiceArchitecture locale={locale} />
 
       <section className="bg-white px-4 py-24 md:px-8 md:py-32">
         <div className="mx-auto max-w-[1240px]">
@@ -778,27 +1014,61 @@ export function StoryExperience() {
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <EvidenceCard
               number="60.1%"
-              label="Selected palatability"
-              note="Thai dog-owner survey, n=411; multi-select, not national prevalence."
+              label={
+                locale === "en" ? "Selected palatability" : "เลือกความน่ากิน"
+              }
+              note={
+                locale === "en"
+                  ? "Thai dog-owner survey, n=411; multi-select, not national prevalence."
+                  : "แบบสำรวจเจ้าของสุนัขไทย n=411; เลือกได้หลายข้อ ไม่ใช่ค่าความชุกระดับประเทศ"
+              }
               href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12668747/"
+              locale={locale}
             />
             <EvidenceCard
               number="6.656m"
-              label="Dog-owning households"
-              note="Thailand 2025 estimate; category context, not customers."
+              label={
+                locale === "en"
+                  ? "Dog-owning households"
+                  : "ครัวเรือนที่เลี้ยงสุนัข"
+              }
+              note={
+                locale === "en"
+                  ? "Thailand 2025 estimate; category context, not customers."
+                  : "ประมาณการประเทศไทยปี 2025; ใช้อธิบายบริบทหมวดหมู่ ไม่ใช่จำนวนลูกค้า"
+              }
               href="https://agriculture.canada.ca/en/international-trade/reports-and-guides/sector-trend-analysis-pet-food-thailand"
+              locale={locale}
             />
             <EvidenceCard
               number="US$988.4m"
-              label="Dog-food retail sales"
-              note="Thailand 2025 estimate; category ceiling, not PawProud TAM."
+              label={
+                locale === "en"
+                  ? "Dog-food retail sales"
+                  : "ยอดขายปลีกอาหารสุนัข"
+              }
+              note={
+                locale === "en"
+                  ? "Thailand 2025 estimate; category ceiling, not PawProud TAM."
+                  : "ประมาณการประเทศไทยปี 2025; ขนาดหมวดหมู่ ไม่ใช่ TAM ของ PawProud"
+              }
               href="https://agriculture.canada.ca/en/international-trade/reports-and-guides/sector-trend-analysis-pet-food-thailand"
+              locale={locale}
             />
             <EvidenceCard
               number="≈805k"
-              label="Bangkok dog households"
-              note="Calculated geographic base; not SAM, demand or revenue."
+              label={
+                locale === "en"
+                  ? "Bangkok dog households"
+                  : "ครัวเรือนสุนัขในกรุงเทพฯ"
+              }
+              note={
+                locale === "en"
+                  ? "Calculated geographic base; not SAM, demand or revenue."
+                  : "ฐานพื้นที่จากการคำนวณ ไม่ใช่ SAM อุปสงค์ หรือรายได้"
+              }
               href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12070910/"
+              locale={locale}
             />
           </div>
         </div>
@@ -819,18 +1089,44 @@ export function StoryExperience() {
                 </h2>
               </div>
               <div className="space-y-3">
-                {[
-                  ["WORKING", "Navigation, EN/TH, forms, state, visualisation"],
-                  ["LIVE WHEN AVAILABLE", "AI feedback with safe fallback"],
-                  [
-                    "SIMULATED",
-                    "Mochi response, TastePrint, payment, delivery",
-                  ],
-                  [
-                    "FUTURE CONCEPT",
-                    "Professional sharing, HomeReady, emergency",
-                  ],
-                ].map(([a, b], i) => (
+                {(locale === "en"
+                  ? [
+                      [
+                        "WORKING",
+                        "Navigation, EN/TH, forms, local state and visualisation",
+                      ],
+                      [
+                        "LIVE WHEN AVAILABLE",
+                        "Workers AI feedback with a safe deterministic fallback",
+                      ],
+                      [
+                        "SIMULATED",
+                        "Camera moment, Mochi response, TastePrint, payment and delivery",
+                      ],
+                      [
+                        "FUTURE CONCEPT",
+                        "Professional sharing, HomeReady and emergency support",
+                      ],
+                    ]
+                  : [
+                      [
+                        "ใช้งานได้",
+                        "การนำทาง EN/TH ฟอร์ม สถานะในเครื่อง และการแสดงผล",
+                      ],
+                      [
+                        "ใช้ AI เมื่อพร้อม",
+                        "คำอธิบายจาก Workers AI พร้อม fallback แบบกำหนดไว้ล่วงหน้า",
+                      ],
+                      [
+                        "จำลอง",
+                        "ช่วงกล้อง ปฏิกิริยาของโมจิ TastePrint การชำระเงิน และการจัดส่ง",
+                      ],
+                      [
+                        "แนวคิดอนาคต",
+                        "การแชร์ให้ผู้เชี่ยวชาญ HomeReady และการช่วยเหลือฉุกเฉิน",
+                      ],
+                    ]
+                ).map(([a, b], i) => (
                   <div
                     key={a}
                     className="flex gap-3 rounded-[20px] bg-white/8 p-4"
@@ -881,7 +1177,7 @@ export function StoryExperience() {
               className="mx-auto w-[240px]"
             />
             <Link
-              href="/app/?demo=fresh"
+              href="/app/food/trial/?reset=1"
               className="pressable flex min-h-16 items-center justify-center gap-2 rounded-[20px] bg-[var(--chocolate)] px-6 text-center font-black text-white"
             >
               {locale === "en"
@@ -908,16 +1204,18 @@ export function StoryExperience() {
             className="h-auto w-[125px] brightness-0 invert"
           />
           <p className="text-xs text-white/45">
-            U-Hackathon concept prototype · October 2026
+            {locale === "en"
+              ? "U-Hackathon concept prototype · October 2026"
+              : "ต้นแบบแนวคิดสำหรับ U-Hackathon · ตุลาคม 2026"}
           </p>
           <a href="#top" className="text-xs font-black">
-            BACK TO TOP ↑
+            {locale === "en" ? "BACK TO TOP ↑" : "กลับขึ้นด้านบน ↑"}
           </a>
         </div>
       </footer>
 
       <Link
-        href="/app/?demo=fresh"
+        href="/app/food/"
         className="pressable fixed bottom-4 right-4 z-40 flex h-14 items-center gap-2 rounded-full bg-[var(--coral-dark)] px-5 text-sm font-black text-white shadow-[0_14px_35px_rgba(90,34,30,.3)] md:hidden"
       >
         {locale === "en" ? "Try with Mochi" : "ลองกับโมจิ"}
