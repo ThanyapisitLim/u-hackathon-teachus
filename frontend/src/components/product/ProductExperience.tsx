@@ -1581,17 +1581,15 @@ function TastePrintScreen({
       <PageTitle
         sub={
           l === "en"
-            ? "1 trial recorded · unknown traits remain unfilled"
-            : "บันทึกแล้ว 1 การทดลอง · คุณลักษณะที่ยังไม่ทราบจะแสดงเป็นช่องว่าง"
+            ? `${Math.max(1, evidence)} ${Math.max(1, evidence) === 1 ? "trial" : "trials"} recorded · unknown traits stay clearly marked`
+            : `บันทึกแล้ว ${Math.max(1, evidence)} การทดลอง · ด้านที่ยังไม่ทราบจะแสดงไว้อย่างชัดเจน`
         }
       >
         {l === "en" ? "TastePrint" : "TastePrint"}
       </PageTitle>
       <div className="relative mt-6 py-3">
-        <motion.div
+        <div
           aria-hidden="true"
-          animate={{ rotate: [-2, 2, -2], scale: [0.98, 1.02, 0.98] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
           className="absolute inset-x-8 top-0 h-[290px] rounded-[48%_52%_58%_42%/52%_44%_56%_48%] bg-[radial-gradient(circle_at_42%_36%,#fff_0,#fff2e8_62%,#ffe4dd_100%)]"
         />
         <div className="relative">
@@ -1622,22 +1620,10 @@ function TastePrintScreen({
                 ? "No clear signal was recorded. PawProud keeps the profile uncertain and recommends repeating—not buying."
                 : "ยังไม่มีสัญญาณที่ชัดเจน PawProud จึงคงสถานะไม่แน่นอนและแนะนำให้ทดลองซ้ำแทนการซื้อ"
               : l === "en"
-                ? "Aroma now has an early signal. Texture remains paired, while moisture and familiarity still need another comparison."
-                : "ตอนนี้ด้านกลิ่นมีสัญญาณเบื้องต้น ส่วนเนื้อสัมผัสยังอยู่เป็นคู่ และความชื้นกับความคุ้นเคยยังต้องทดลองเพิ่มเติม"}
+                ? "Aroma now has an early signal. Texture was present in the same sample, so it needs a separate comparison. Moisture and familiarity still need more observations."
+                : "ตอนนี้ด้านกลิ่นมีสัญญาณเบื้องต้น ส่วนเนื้อสัมผัสอยู่ในตัวอย่างเดียวกันจึงต้องแยกทดลองเพิ่ม และยังต้องสังเกตความชื้นกับความคุ้นเคยต่อ"}
           </p>
         </div>
-      </div>
-      <div className="mt-4 flex items-center justify-center gap-5 border-t border-[var(--line)] pt-4 text-xs text-[var(--muted)]">
-        {!unclear && (
-          <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[var(--coral)]" />
-            {l === "en" ? "Observed" : "สังเกตแล้ว"}
-          </span>
-        )}
-        <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full border border-[var(--muted)] bg-white" />
-          {l === "en" ? "Learning" : "กำลังเรียนรู้"}
-        </span>
       </div>
       <div className="mt-6">
         <AppButton

@@ -8,8 +8,6 @@ import {
   Camera,
   CameraOff,
   Check,
-  Drumstick,
-  Fish,
   Focus,
   PawPrint,
   RotateCcw,
@@ -24,20 +22,21 @@ const copy = {
   en: {
     eyebrow: "Taste observation",
     title: "Capture the first reaction",
-    intro: "Frame your dog with both bowls. This quick moment helps you remember what happened.",
+    intro: "Frame your dog with the food bowl. This quick moment helps you remember what happened.",
     prototype: "Prototype camera",
     open: "Open camera",
     opening: "Opening camera",
     openingDetail: "Preparing the viewfinder",
-    live: "Keep your dog and both bowls inside the guide.",
+    live: "Keep your dog and the food bowl inside the guide.",
+    sample: "Sample view",
     capture: "Capture moment",
     capturing: "Capturing",
     processing: "Preparing observation",
     processingDetail: "Preparing the preview for today’s taste trial.",
     ready: "Preview ready",
     readyDetail: "Review the simulated preview, then continue.",
-    usePhoto: "Continue with preview",
-    retake: "Try again",
+    usePhoto: "Use preview",
+    retake: "Retake",
     skip: "Continue without a photo",
     privacy: "This prototype uses a sample view. No photo is taken or uploaded.",
     statusIdle: "Prototype camera has not been opened",
@@ -49,20 +48,21 @@ const copy = {
   th: {
     eyebrow: "สังเกตมื้อทดลอง",
     title: "เก็บภาพปฏิกิริยาแรก",
-    intro: "จัดภาพให้น้องอยู่กับชามทั้งสองใบ เพื่อช่วยจำสิ่งที่เกิดขึ้นก่อนบันทึกรายละเอียด",
+    intro: "จัดภาพให้น้องอยู่กับชามอาหาร เพื่อช่วยจำสิ่งที่เกิดขึ้นก่อนบันทึกรายละเอียด",
     prototype: "กล้องต้นแบบ",
     open: "เปิดกล้อง",
     opening: "กำลังเปิดกล้อง",
     openingDetail: "กำลังเตรียมช่องมองภาพ",
-    live: "ให้น้องและชามทั้งสองใบอยู่ในกรอบ",
+    live: "ให้น้องและชามอาหารอยู่ในกรอบ",
+    sample: "ภาพตัวอย่าง",
     capture: "ถ่ายภาพนี้",
     capturing: "กำลังถ่าย",
     processing: "กำลังเตรียมบันทึก",
     processingDetail: "กำลังเตรียมภาพตัวอย่างสำหรับมื้อทดลองวันนี้",
     ready: "ตัวอย่างพร้อมแล้ว",
     readyDetail: "ตรวจดูภาพจำลอง แล้วไปต่อได้เลย",
-    usePhoto: "ทำต่อด้วยภาพตัวอย่าง",
-    retake: "ลองอีกครั้ง",
+    usePhoto: "ใช้ภาพตัวอย่าง",
+    retake: "ถ่ายใหม่",
     skip: "ทำต่อโดยไม่ถ่ายภาพ",
     privacy: "กล้องต้นแบบใช้ภาพตัวอย่าง จึงไม่มีการถ่ายหรืออัปโหลดภาพจริง",
     statusIdle: "ยังไม่ได้เปิดกล้องต้นแบบ",
@@ -79,50 +79,25 @@ function delay(milliseconds: number) {
 
 function CameraScene({ live, reduceMotion }: { live: boolean; reduceMotion: boolean }) {
   return (
-    <div className="absolute inset-0 overflow-hidden bg-[linear-gradient(165deg,#9ed9ef_0%,#d7eff7_38%,#f4d5b2_38%,#dca97a_100%)]">
+    <div className="absolute inset-0 overflow-hidden bg-[#6a7d70]">
       <motion.div
         aria-hidden="true"
-        className="absolute -left-16 -top-16 h-52 w-52 rounded-full bg-white/28 blur-2xl"
-        animate={live && !reduceMotion ? { x: [0, 16, 0], y: [0, 10, 0] } : undefined}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        aria-hidden="true"
-        className="absolute left-1/2 top-5 h-[310px] w-[310px] -translate-x-1/2"
-        animate={live && !reduceMotion ? { y: [0, -5, 0], rotate: [-0.7, 0.8, -0.7] } : undefined}
-        transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -inset-2"
+        animate={live && !reduceMotion
+          ? { scale: [1.025, 1.045, 1.025], x: [0, -3, 0], y: [0, 2, 0] }
+          : { scale: 1.025 }}
+        transition={{ duration: 4.8, repeat: live && !reduceMotion ? Infinity : 0, ease: "easeInOut" }}
       >
         <Image
-          src="/brand/pawproud-mascot-logo.webp"
+          src="/demo/dog-food-trial-pexels-8434676.jpg"
           alt=""
           fill
           preload
-          sizes="310px"
-          className="object-cover object-top [clip-path:inset(0_0_29%_0)]"
+          sizes="(max-width: 480px) 100vw, 410px"
+          className="object-cover object-[54%_center]"
         />
       </motion.div>
-      <div
-        aria-hidden="true"
-        className="absolute -bottom-10 left-1/2 h-40 w-[118%] -translate-x-1/2 bg-[#bb7f50] shadow-[inset_0_18px_34px_rgba(92,50,28,.18)]"
-        style={{ borderRadius: "50% 50% 0 0 / 28% 28% 0 0" }}
-      />
-      {[
-        { side: "left-[18%]", tone: "bg-[var(--honey)] text-[var(--chocolate)]", Icon: Drumstick },
-        { side: "right-[15%]", tone: "bg-[#DCEEF9] text-[#285A79]", Icon: Fish },
-      ].map(({ side, tone, Icon }, index) => (
-        <motion.div
-          key={side}
-          aria-hidden="true"
-          className={`absolute bottom-5 h-[92px] w-[128px] ${side}`}
-          animate={live && !reduceMotion ? { y: index ? [-1, 2, -1] : [0, -2, 0] } : undefined}
-          transition={{ duration: index ? 2.9 : 2.7, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <div className="absolute inset-x-0 bottom-0 h-[54px] rounded-[50%] bg-[#fff4dd] shadow-[0_14px_24px_rgba(83,45,25,.28),inset_0_-10px_0_#dfc39b]" />
-          <span className={`absolute left-1/2 top-[49px] grid h-10 w-10 -translate-x-1/2 place-items-center rounded-full shadow-sm ${tone}`}>
-            <Icon size={20} strokeWidth={2.4} />
-          </span>
-        </motion.div>
-      ))}
+      <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(145deg,rgba(255,210,142,.13),transparent_42%,rgba(31,61,54,.16))]" />
     </div>
   );
 }
@@ -325,6 +300,9 @@ export function CameraMoment({
             >
               <CameraScene live={cameraState === "live"} reduceMotion={reduceMotion} />
               <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(36,18,13,.28),transparent_27%,transparent_66%,rgba(36,18,13,.64))]" />
+              <span className="absolute left-4 top-4 z-10 rounded-full bg-[var(--ink)]/78 px-2.5 py-1 text-[9px] font-extrabold tracking-[.12em] text-white uppercase shadow-sm backdrop-blur-sm">
+                {c.sample}
+              </span>
 
               {cameraState === "live" && (
                 <>
@@ -334,7 +312,7 @@ export function CameraMoment({
                     <span className="absolute -bottom-2 -left-2 h-7 w-7 rounded-bl-2xl border-b-4 border-l-4 border-[var(--honey)]" />
                     <span className="absolute -bottom-2 -right-2 h-7 w-7 rounded-br-2xl border-b-4 border-r-4 border-[var(--honey)]" />
                   </div>
-                  <p className="absolute inset-x-8 top-5 text-center text-sm font-bold leading-5 text-white [text-shadow:0_2px_10px_rgba(0,0,0,.55)]">{c.live}</p>
+                  <p className="absolute inset-x-9 top-14 rounded-full bg-[var(--ink)]/54 px-3 py-2 text-center text-sm font-bold leading-5 text-white shadow-sm backdrop-blur-[2px]">{c.live}</p>
                   <div className="absolute inset-x-0 bottom-5 flex justify-center">
                     <button type="button" onClick={beginCapture} disabled={countdown !== null} className="pressable grid h-[72px] w-[72px] place-items-center rounded-full border-[6px] border-white/92 bg-[var(--coral)] text-white shadow-[0_12px_28px_rgba(28,14,10,.3)] disabled:cursor-wait focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white" aria-label={c.capture}>
                       <Camera size={28} strokeWidth={2.5} aria-hidden="true" />
@@ -378,10 +356,10 @@ export function CameraMoment({
                     </div>
                   </div>
                   <div className="mt-3 flex gap-2">
-                    <button type="button" onClick={openCamera} className="pressable inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-[var(--soft)] px-4 text-sm font-extrabold text-[var(--ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--coral-dark)]">
+                    <button type="button" onClick={openCamera} className="pressable inline-flex min-h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-[var(--soft)] px-4 text-sm font-extrabold text-[var(--ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--coral-dark)]">
                       <RotateCcw size={17} aria-hidden="true" />{c.retake}
                     </button>
-                    <button type="button" onClick={onContinue} className="pressable inline-flex min-h-11 flex-[1.25] items-center justify-center gap-2 rounded-full bg-[var(--ink)] px-4 text-sm font-extrabold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--coral-dark)]">
+                    <button type="button" onClick={onContinue} className="pressable inline-flex min-h-11 flex-[1.25] items-center justify-center gap-2 whitespace-nowrap rounded-full bg-[var(--ink)] px-4 text-sm font-extrabold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--coral-dark)]">
                       {c.usePhoto}<ArrowRight size={17} aria-hidden="true" />
                     </button>
                   </div>
