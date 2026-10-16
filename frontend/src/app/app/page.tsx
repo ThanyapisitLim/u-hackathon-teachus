@@ -1,5 +1,5 @@
-import { ProductExperience } from "@/components/product/ProductExperience";
+import { PawApp } from "@/components/app/PawApp";
 
-export default function ProductPage() {
-  return <ProductExperience />;
+export default function AppPage() {
+  return <PawApp />;
 }
