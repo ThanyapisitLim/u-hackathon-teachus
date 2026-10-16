@@ -10,6 +10,16 @@
 
 > **Latest decisions in this file override older scope details elsewhere in `docs/`.** The earlier research remains valuable, but this build has no physical-box deliverable, does not need a real preference model, and uses live AI only for feedback/explanation.
 
+## Verified build snapshot
+
+**Live Presentation Web:** <https://pawproud.pawproud-u-hackathon.workers.dev/story/>
+
+**Live Product Web:** <https://pawproud.pawproud-u-hackathon.workers.dev/app/>
+
+**Branch:** `codex/pawproud-experience`
+
+**Verified on 16 October 2026:** production build, typecheck, lint, HTTP/2 delivery for Story/Product/audio/brand assets, a complete browser flow through live AI feedback, English-to-Thai state-preserving language switch, a valid Workers AI response, and a rejected invalid API payload (`400`). The AI endpoint turns one bounded model observation into a two-sentence response by adding a deterministic safe-next-step sentence; malformed or unavailable AI output uses the labelled fallback.
+
 ## 1. The product in one minute
 
 **Hook:** The payer chooses. The real user answers after checkout. **PawProud lets the dog answer first.**

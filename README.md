@@ -8,6 +8,14 @@ PawProud is a mobile-first hackathon prototype for learning a dog's food prefere
 
 This is not a service-dog provider. It borrows the care discipline behind good assistance-dog systems—welfare, fit, preparation, continuity, clear roles, and follow-up—and applies that thinking to everyday owner–dog care. It does not train, certify, register, or create legal access rights for service dogs.
 
+## Live prototype
+
+- **Presentation Web:** [pawproud.pawproud-u-hackathon.workers.dev/story/](https://pawproud.pawproud-u-hackathon.workers.dev/story/)
+- **Product Web:** [pawproud.pawproud-u-hackathon.workers.dev/app/](https://pawproud.pawproud-u-hackathon.workers.dev/app/)
+- **Implementation branch:** `codex/pawproud-experience`
+
+The deployed Worker serves both sites, the optional ElevenLabs onboarding audio, and the guarded `POST /api/feedback` Workers AI endpoint.
+
 ## What is in this repository
 
 - **Presentation Web** — `/` and `/story/`: judge-first story, evidence, business logic, impact, prototype truth, and a direct handoff into the demo.
