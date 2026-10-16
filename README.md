@@ -19,11 +19,11 @@ The deployed Worker serves both sites, the optional ElevenLabs onboarding audio,
 ## What is in this repository
 
 - **Presentation Web** — `/` and `/story/`: judge-first story, evidence, business logic, impact, prototype truth, and a direct handoff into the demo.
-- **Product Web** — `/app/`: one complete, stateful flow from guided welcome and safety check to Taste Trial, AI explanation, TastePrint, First Bowl, check-in, optional subscription, and Care Passport.
+- **Product Web** — semantic owner routes under `/app/`: a service hub, Food Lab status, resumable Taste Trial, a simulated camera handoff, visible PawSense explanation, and Care Passport. The core flow continues from safety check through TastePrint, First Bowl, check-in, and optional subscription.
 - **Live AI feedback** — `POST /api/feedback`: Cloudflare Workers AI explains structured owner observations. A deterministic safety-bounded fallback keeps the flow usable locally or if AI is unavailable.
 - **Research and product documentation** — `docs/`: the current collaborator brief plus the Thai source of truth, evidence library, and detailed product blueprint.
 
-There is **no physical box deliverable in this hackathon build**. Food samples, preference-learning logic, checkout, payment, delivery, and subscription commerce are represented as clearly labelled simulations. Navigation, state, language switching, interaction, visualisation, animation, persistence, and the AI feedback/fallback path are functional.
+There is **no physical box deliverable in this hackathon build**. Food samples, the trial camera, preference-learning logic, checkout, payment, delivery, and subscription commerce are represented as clearly labelled simulations. The simulated camera includes a viewfinder, countdown, capture feedback, preview, and processing transition so judges can understand the intended physical-world workflow without relying on camera hardware or permission prompts. Navigation, state, language switching, interaction, visualisation, animation, persistence, and the AI feedback/fallback path are functional.
 
 ## Start here
 
@@ -49,7 +49,17 @@ Open:
 
 - `http://localhost:3000/` — Presentation Web
 - `http://localhost:3000/story/` — Presentation Web explicit route
-- `http://localhost:3000/app/` — Product Web
+- `http://localhost:3000/app/` — Product Web service hub; this is always the normal app entry
+- `http://localhost:3000/app/food/` — Food Lab status/detail and start-or-resume control
+- `http://localhost:3000/app/food/trial/` — resumable Taste Trial; add `?reset=1` for a fresh trial
+- `http://localhost:3000/app/ai/` — PawSense explanation surface
+- `http://localhost:3000/app/passport/` — Care Passport continuity view
+
+### Navigation and persistence contract
+
+The URL owns the current product area. Refreshing `/app/` therefore returns to the service hub instead of reopening a transient form. The browser stores the care record—language, Food Trial progress and observations, AI feedback provenance, order/check-in state, and optional-plan controls—under `pawproud-demo-v2`; it does **not** store the current screen. `/app/food/trial/` resumes the stored Food Trial step, while `/app/food/trial/?reset=1` deliberately clears the demo care journey (while keeping the selected language) and starts at safety.
+
+Presentation CTAs must deep-link to the experience they promise: general product links go to `/app/`, food-story links go to `/app/food/`, Care Passport links go to `/app/passport/`, and the full fresh demo goes to `/app/food/trial/?reset=1`.
 
 `next dev` does not provide the Cloudflare AI binding, so the Product Web intentionally uses its deterministic fallback if `/api/feedback` is unavailable. To test the Worker and AI binding locally after a production build:
 

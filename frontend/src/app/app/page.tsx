@@ -1,5 +1,5 @@
 import { ProductExperience } from "@/components/product/ProductExperience";
 
 export default function ProductPage() {
-  return <ProductExperience />;
+  return <ProductExperience entry="hub" />;
 }

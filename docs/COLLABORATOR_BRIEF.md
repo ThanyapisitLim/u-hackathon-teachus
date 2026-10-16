@@ -119,6 +119,7 @@ The dog is not the payer and cannot complete a form, but its behaviour is the ke
 - meaningful visualisation and motion on every practical mock screen;
 - a guided welcome with optional English audio;
 - structured two-option Taste Trial and owner-observation capture;
+- a reliable simulated camera handoff with viewfinder, countdown, shutter feedback, captured preview, and short processing transition;
 - live Cloudflare Workers AI explanation with a deterministic fallback;
 - animated TastePrint with visible known/unknown dimensions;
 - simulated one-time checkout, delivery, check-in, and subscription controls;
@@ -132,6 +133,7 @@ The dog is not the payer and cannot complete a form, but its behaviour is the ke
 - no validated nutrition formulation or allergy testing;
 - no real payment, order, delivery, billing, or subscription backend;
 - no production Bayesian preference model or ingredient-matching engine;
+- no real camera capture, image upload, or computer-vision analysis in the hackathon prototype;
 - no clinical diagnosis, treatment advice, triage, or emergency dispatch;
 - no clinic availability data or marketplace transactions;
 - no service-dog training, certification, registration, or access-right determination;
@@ -148,32 +150,50 @@ The dog is not the payer and cannot complete a form, but its behaviour is the ke
 
 The longer-term “signature mix” idea is a preference-memory and modular-service hypothesis, not permission for an algorithm to formulate a complete diet. Age, health, allergies, nutrition, and medication require qualified review and validated operations before they can influence a real food product.
 
-## 6. Product architecture: two paths, one idea
+## 6. Product architecture: two experiences, semantic product routes
 
 | Experience | Route | Primary audience | Job |
 |---|---|---|---|
 | Presentation Web | `/` and `/story/` | judges, partners, teammates | Make the chain problem, insight, evidence, business logic, impact, boundaries, and demo handoff memorable. |
-| Product Web | `/app/` | owner using the prototype | Let a user complete the core care loop and inspect every practical product state. |
+| Product hub | `/app/` | owner entering normally | Show the owner–dog service system, current progress, and clear entries to Food Lab, PawSense, and Care Passport. A normal refresh must remain on this hub. |
+| Food Lab status | `/app/food/` | owner deciding what to do next | Explain the food service, show new/in-progress/ready status, and offer the correct start, resume, result, or PawSense action. |
+| Food Trial | `/app/food/trial/` | owner completing the physical-world observation | Resume the saved trial step from safety through subscription decision. `?reset=1` intentionally starts a fresh trial. |
+| PawSense | `/app/ai/` | owner who wants to understand the evidence | Make the AI explanation capability visible without presenting it as a chat or decision-maker. Use saved evidence when available and a clearly labelled demo signal otherwise. |
+| Care Passport | `/app/passport/` | owner reviewing continuity | Show the owner-controlled record, provenance, and next care context without presenting it as a verified medical record. |
 | AI feedback endpoint | `POST /api/feedback` | Product Web | Explain a validated structured observation in plain English or Thai, with a safe fallback. |
 
-The Product Web is deliberately implemented as a state machine inside `/app/`, not as a set of disconnected marketing pages. The bottom navigation exposes **Today, Taste, Plan, Passport, and More** after the guided flow.
+These are semantic entry routes into one shared product state, not disconnected microsites. The URL owns the current product area; care evidence owns continuity. The bottom navigation exposes **Today, Food, PawSense, Passport, and More** without forcing a first-time user into a questionnaire.
+
+### Route and persistence contract
+
+- `/app/` always opens the service hub, even after a trial has begun.
+- `/app/food/` is the only start-or-resume door for the Food Lab in normal use.
+- `/app/food/trial/` resumes `foodTrialStep`; `/app/food/trial/?reset=1` clears the demo care journey, keeps the selected language, and removes the reset query after applying it.
+- `/app/ai/` and `/app/passport/` open those product capabilities directly while reading the same care record.
+- Browser storage uses `pawproud-demo-v2` and migrates the earlier `pawproud-demo-v1` record when present.
+- Persisted care data includes language, trial step, choice and observations, AI explanation/source, order and meal check-in state, optional subscription controls, and tutorial completion.
+- The transient `screen` value is never persisted. Refreshing or opening a semantic route cannot accidentally restore an unrelated form screen.
+- If storage is unavailable, the prototype remains usable with in-memory defaults.
 
 ## 7. Complete main flow
 
 ```text
-Guided welcome
-  → Safety snapshot
-    → if concern: pause + professional-care guidance
-    → if normal: two-taste comparison
-      → record approach, intake, and body language
-        → save observation
-          → AI explanation or deterministic safe fallback
-            → reveal animated TastePrint
-              → inspect one-time First Bowl
-                → simulated checkout + receipt
-                  → meal check-in
-                    → optional subscription decision
-                      → Today / Plan / Care Passport
+Product hub
+  → Food Lab status/detail
+    → Start fresh or resume saved trial
+      → Safety snapshot
+        → if concern: pause + professional-care guidance
+        → if normal: two-taste comparison
+          → simulate opening the camera and capturing the trial moment
+            → record approach, intake, and body language
+            → save observation
+              → PawSense explanation or deterministic safe fallback
+                → reveal animated TastePrint
+                  → inspect one-time First Bowl
+                    → simulated checkout + receipt
+                      → meal check-in
+                        → optional subscription decision
+                          → Product hub / PawSense / Care Passport
 ```
 
 ### Funnel and commitment logic
@@ -233,19 +253,22 @@ Every screen below must communicate its state visually and support the intended 
 
 | Screen/state | Purpose | Required communication and interaction |
 |---|---|---|
-| Welcome / tutorial | Establish the hook and reduce uncertainty | Mascot-led motion, three-step promise, start with English audio or continue silently, link back to Story Web. |
+| Product hub | Make the system and next action legible immediately | Mascot-led motion, state-aware Food Lab hero, visible PawSense and Care Passport entries, profile/support access, and no forced form. |
+| Food Lab status/detail | Explain the service before asking for input | Show what the trial learns, current progress, and one unambiguous start/resume/result action. |
+| Optional tutorial/loading | Establish tone without blocking repeat use | Brief branded dog motion, reduced-motion support, and optional English audio; do not replay a long onboarding on every visit. |
 | Safety snapshot | Confirm that a preference trial is appropriate today | Clear owner checklist, normal/concern branches, non-diagnostic disclaimer. |
 | Safety hold | Protect welfare over data collection | Strong pause visual, safe next step, route to help or answer review. |
 | Guided Taste Trial | Capture first approach without forcing certainty | Two visually distinct bowls, select A/B or “no clear choice,” animated response, physical-sample simulation label. |
+| Camera handoff | Make the physical observation workflow feel testable and complete | Simulated viewfinder, visible prototype label, 3-second countdown, shutter response, captured preview, a short preparation state, and a manual skip. Do not request device permission or imply that an image is uploaded or analysed. |
 | Observation capture | Add behavioural context | Segmented controls for approach, intake, and body language; structured and low-friction. |
-| AI feedback | Translate the saved observation | Loading state, source badge (`Live AI` or `Safe fallback`), retry, known/unknown boundary. |
+| PawSense | Translate the saved observation | A visual evidence map rather than a generic chat, loading state, source provenance (`Live AI`, deterministic safety summary, or labelled demo signal), retry/read action, and known/unknown boundary. |
 | TastePrint | Reveal an evidence-shaped profile | Animated four-petal visual; supported dimensions fill, unknown dimensions remain patterned; evidence count; no fake confidence score. |
 | First Bowl | Present the next reversible commitment | Interactive 3D bowl and ingredient orbs, one-time purchase framing, explicit simulation label. |
 | Checkout | Make price and scope understandable | Order summary, address/payment preview, one-time total, no hidden subscription. |
 | Receipt | Close the mock transaction cleanly | Confirmation, simulated status, next-step handoff. |
 | Meal check-in | Learn from actual use rather than checkout | Consumption/acceptance choices, simple owner report, updates state. |
 | Optional subscription | Offer repeat only after evidence | Accept or decline, no default lock-in, clearly labelled simulated commerce. |
-| Today | Give a useful next action | State-aware hero, TastePrint status, delivery preview, and Care Passport link. |
+| Today / product hub | Give a useful next action | State-aware Food Lab hero, evidence status, PawSense capability, and Care Passport link. |
 | Plan | Make recurring control practical | No-plan empty state or active plan with skip, pause, cancel, price, rhythm, and delivery details. |
 | Delivery | Visualise service trust | Animated/visual status timeline, mock order and address labels, no claim of live logistics. |
 | Care Passport | Show continuity across the whole system | Animated evidence timeline, provenance tags, owner control, sharing preview, future HomeReady/Emergency placeholders. |
@@ -377,6 +400,19 @@ Recommended story spine:
 6. **Care with memory:** Care Passport turns one meal into continuity, then points carefully to HomeReady and Emergency Ready.
 7. **Proof and boundaries:** evidence cards, prototype truth labels, social impact, real/simulated table, and one-click demo handoff.
 
+### Presentation-to-product link contract
+
+The handoff should preserve the promise made by the CTA instead of sending every judge to the same form:
+
+| Presentation intent | Destination | Expected first view |
+|---|---|---|
+| Explore the product or use the header app link | `/app/` | Service hub with Food Lab, PawSense, and Care Passport visible. |
+| Understand or try the food service | `/app/food/` | Food Lab explanation plus the current start/resume/result state. |
+| Inspect continuity and owner control | `/app/passport/` | Care Passport timeline and provenance. |
+| Run the full stage demo from a known state | `/app/food/trial/?reset=1` | Fresh safety step, with the reset query consumed after load. |
+
+Do not use `?reset=1` for an ordinary Food Lab CTA: it is a deliberate stage/demo reset and would erase a returning user's trial progress.
+
 The stage experience should answer six judge questions without requiring narration:
 
 - What is the painful chain?
@@ -444,9 +480,14 @@ The North Star is not screen time or subscription rate. It is **verified useful 
 ```text
 Browser
   ├─ Presentation Web: Next.js static route `/` + `/story/`
-  ├─ Product Web: Next.js static route `/app/`
-  │    ├─ React state machine
-  │    ├─ localStorage key `pawproud-demo-v1`
+  ├─ Product Web: semantic Next.js static routes
+  │    ├─ `/app/` service hub
+  │    ├─ `/app/food/` Food Lab status/detail
+  │    ├─ `/app/food/trial/` resumable trial state machine
+  │    ├─ `/app/ai/` PawSense evidence explanation
+  │    ├─ `/app/passport/` Care Passport continuity
+  │    ├─ shared localStorage care state: `pawproud-demo-v2`
+  │    ├─ route-owned transient screen state
   │    ├─ Motion animations
   │    └─ React Three Fiber / Three.js bowl visual
   └─ POST `/api/feedback`
@@ -468,7 +509,7 @@ Technology in the current build:
 - Motion for state and story transitions;
 - Three.js / React Three Fiber for the bowl visual;
 - Cloudflare Worker + Workers AI;
-- browser `localStorage` for replayable demo persistence.
+- browser `localStorage` for care evidence and service-progress persistence, with route-owned navigation so a refresh cannot reopen an unrelated form.
 
 The existing `backend/` Go/Supabase scaffold is not part of the current runtime. Do not introduce a database merely to make the hackathon architecture look larger. A production system would need authenticated owner accounts, consent, event provenance, privacy controls, audit history, operational integrations, and professional data governance.
 
@@ -481,7 +522,11 @@ npm run dev
 ```
 
 - Presentation: `http://localhost:3000/` or `/story/`
-- Product: `http://localhost:3000/app/`
+- Product hub: `http://localhost:3000/app/`
+- Food Lab status: `http://localhost:3000/app/food/`
+- Food Trial: `http://localhost:3000/app/food/trial/`
+- PawSense: `http://localhost:3000/app/ai/`
+- Care Passport: `http://localhost:3000/app/passport/`
 - Under plain `next dev`, AI feedback may use the safe client fallback because the Cloudflare binding is absent.
 
 ### Validate and preview
@@ -514,6 +559,7 @@ Cloudflare bindings live in `frontend/wrangler.jsonc`. No OpenAI API key is requ
 | AI feedback | **Live when Worker AI is available** | Show `Live AI`; never block the flow if unavailable. |
 | AI fallback | **Real deterministic fallback** | Show `Safe fallback`; preserve the same guardrails. |
 | Preference inference / TastePrint values | **Simulated** | Label as early/simulated; show unknown dimensions. |
+| Camera viewfinder and captured preview | **Interactive simulation** | No device permission, stored photo, upload, or image analysis; the owner confirms the actual observations that PawSense reads. |
 | First Bowl product and recipe | **Concept** | No nutrition, manufacturing, or suitability claim. |
 | Checkout/payment | **Simulated** | No charge; no credential collection; visible one-time framing. |
 | Delivery timeline | **Simulated** | No live tracking claim. |
@@ -560,14 +606,19 @@ Cloudflare bindings live in `frontend/wrangler.jsonc`. No OpenAI API key is requ
 
 ### Product Web
 
-- [ ] A first-time user can complete Welcome → Safety → Trial → Observation → Feedback → TastePrint → First Bowl → mock Checkout → Check-in → Subscription decision without instruction from the team.
+- [ ] Opening or refreshing `/app/` shows the service hub, never an accidentally restored form step.
+- [ ] `/app/food/` shows Food Lab status and gives the correct start, resume, or result action from saved care state.
+- [ ] `/app/food/trial/` resumes the saved `foodTrialStep`; `?reset=1` starts fresh without permanently leaving the reset query in the URL.
+- [ ] A first-time user can complete Product hub → Food Lab detail → Safety → Trial → simulated Camera → Observation → PawSense feedback → TastePrint → First Bowl → mock Checkout → Check-in → Subscription decision without instruction from the team.
+- [ ] The simulated Camera visibly opens, counts down, responds to capture, shows a preview, and transitions through a perceivable preparation state; it also offers a manual skip and never requests hardware permission.
 - [ ] Choosing a safety concern stops the trial and exposes appropriate non-diagnostic help.
 - [ ] “No clear choice” is a valid result; the UI never forces false certainty.
-- [ ] AI success and fallback both lead to a complete experience and are labelled correctly.
+- [ ] PawSense is reachable directly at `/app/ai/`, visually traces its source evidence, and labels live AI, fallback, and demo input correctly.
 - [ ] TastePrint distinguishes observed signal from dimensions still learning.
 - [ ] First Bowl is one-time; subscription appears only after the meal check-in.
 - [ ] Subscription can be declined; a selected demo plan can be paused, skipped, and cancelled.
-- [ ] Today, Plan, Delivery, Profile, Help, More, and Care Passport are reachable and state-aware.
+- [ ] Today, Food, PawSense, Passport, More, Plan, Delivery, Profile, and Help are reachable and state-aware.
+- [ ] Refreshing a semantic route keeps care evidence but does not restore a transient screen from another route.
 - [ ] Demo reset returns the flow to a clean state.
 - [ ] English is default and the Thai toggle preserves state.
 - [ ] Every practical mock screen contains purposeful visual communication or state motion, not a dead placeholder.
@@ -582,7 +633,7 @@ Cloudflare bindings live in `frontend/wrangler.jsonc`. No OpenAI API key is requ
 - [ ] The service-dog inspiration and its boundaries are explained accurately.
 - [ ] Real, simulated, and future elements are clearly separated.
 - [ ] Care Passport is positioned as continuity, not as a verified medical record.
-- [ ] A one-click handoff enters the Product Web demo.
+- [ ] Presentation CTAs hand off semantically: general product → `/app/`, food → `/app/food/`, passport → `/app/passport/`, and fresh full demo → `/app/food/trial/?reset=1`.
 - [ ] The page works for both a narrated stage pitch and self-guided review.
 
 ### Quality and handoff
