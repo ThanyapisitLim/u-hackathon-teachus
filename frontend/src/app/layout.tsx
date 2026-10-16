@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://pawproud.pawproud-u-hackathon.workers.dev"),
   title: "PawProud — Let your dog answer first",
   description: "A try-before-you-subscribe dog food service that learns from observable reactions.",
   icons: { icon: "/brand/pawproud-app-icon.webp" },

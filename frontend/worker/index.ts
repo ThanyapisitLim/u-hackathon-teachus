@@ -52,6 +52,19 @@ function extractText(result: unknown): string | null {
   return null;
 }
 
+function buildGuardrailedFeedback(text: string, locale: TrialPayload["locale"]): string | null {
+  const compact = text.replace(/\s+/g, " ").trim();
+  const sentences = compact.match(/[^.!?。！？]+[.!?。！？]+/g);
+  if (!sentences) return null;
+  const observation = sentences[0].trim();
+  if (observation.length < 25 || observation.length > 260) return null;
+  const nextStep = locale === "th"
+    ? "นี่เป็นเพียงสัญญาณเบื้องต้น โปรดลองเปรียบเทียบแบบเดิมอีกวันก่อนเปลี่ยนอาหารประจำของโมจิ."
+    : "This is an early signal; repeat the same comparison another day before changing Mochi's regular food.";
+  const result = `${observation} ${nextStep}`;
+  return result.length >= 35 && result.length <= 420 ? result : null;
+}
+
 function passesSafetyGate(text: string): boolean {
   const forbidden = [/#|\*\*/, /\b\d{1,3}\s*%/, /\bdiagnos/i, /\ballerg/i, /nutritionally (complete|suitable|safe)/i, /guarantee/i, /definitely|certainly/i];
   return !forbidden.some((pattern) => pattern.test(text));
@@ -64,20 +77,21 @@ async function feedback(request: Request, env: Env): Promise<Response> {
   if (!p) return Response.json({ error: "Invalid structured trial" }, { status: 400 });
   const safeFallback = fallback(p);
   const cacheId = [p.locale, p.choice, p.approach, p.intake, p.energy].join("-");
-  const cacheKey = new Request(`https://pawproud.local/__feedback/${cacheId}`);
+  const cacheKey = new Request(`https://pawproud.local/__feedback/v3/${cacheId}`);
   const edgeCache = (caches as CacheStorage & { default: Cache }).default;
   const cached = await edgeCache.match(cacheKey);
   if (cached) return cached;
   const language = p.locale === "th" ? "Thai" : "English";
-  const prompt = `You are PawProud's careful food-trial explainer. Write exactly 2 short sentences in ${language}. Use only these structured owner observations: dog=Mochi; first choice=${p.choice}; approach=${p.approach}; intake=${p.intake}; body language=${p.energy}. Sentence 1 says what was observed and what it may weakly suggest. Sentence 2 says this is an early signal and gives the safe next step: repeat the comparison another day before changing regular food. Never diagnose, infer allergy, claim nutritional suitability, add an ingredient, invent a percentage, or imply certainty. Do not use markdown or headings.`;
+  const prompt = `You are PawProud's careful food-trial explainer. Write exactly 1 short observation sentence in ${language}, ending with a full stop. Use only these structured owner observations: dog=Mochi; first choice=${p.choice}; approach=${p.approach}; intake=${p.intake}; body language=${p.energy}. Say what was observed and what it may weakly suggest. Use the name Mochi instead of a gendered pronoun. Never diagnose, infer allergy, claim nutritional suitability, add an ingredient, invent a percentage, or imply certainty. Do not give advice, use markdown, or add a heading.`;
   try {
     const result = await Promise.race([
-      env.AI.run("@cf/meta/llama-3.1-8b-instruct-fast", { prompt, max_tokens: 120, temperature: 0.2 }),
+      env.AI.run("@cf/meta/llama-3.1-8b-instruct-fast", { prompt, max_tokens: 60, temperature: 0.2 }),
       new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 6500)),
     ]);
     const text = extractText(result);
-    if (!text || text.length < 35 || text.length > 650 || !passesSafetyGate(text)) throw new Error("malformed");
-    const response = Response.json({ feedback: text, source: "ai", model: "workers-ai" }, { headers: { "cache-control": "public, max-age=86400" } });
+    const conciseText = text ? buildGuardrailedFeedback(text, p.locale) : null;
+    if (!conciseText || !passesSafetyGate(conciseText)) throw new Error("malformed");
+    const response = Response.json({ feedback: conciseText, source: "ai", model: "workers-ai" }, { headers: { "cache-control": "public, max-age=86400" } });
     await edgeCache.put(cacheKey, response.clone());
     return response;
   } catch {
